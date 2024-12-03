@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import Link from 'next/link';
 import { Ingredients } from '@/components/Recipe/ingredients';
 import { Steps } from '@/components/Recipe/steps';
+import { RecipeForm } from '@/components/Recipe/create-form';
 
 export default async function Recipes() {
   const supabase = await createClient();
@@ -49,6 +50,8 @@ export default async function Recipes() {
           )
         })}
       </div>
+
+      <RecipeForm />
     </div>
   )
 }
