@@ -74,22 +74,22 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
-          recipe_id: string | null
-          step_order: number | null
+          recipe_id: string
+          step_order: number
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
-          recipe_id?: string | null
-          step_order?: number | null
+          recipe_id: string
+          step_order: number
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
-          recipe_id?: string | null
-          step_order?: number | null
+          recipe_id?: string
+          step_order?: number
         }
         Relationships: [
           {
@@ -165,17 +165,17 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          name: string | null
+          name: string
         }
         Insert: {
           created_at?: string
           id?: string
-          name?: string | null
+          name: string
         }
         Update: {
           created_at?: string
           id?: string
-          name?: string | null
+          name?: string
         }
         Relationships: []
       }
