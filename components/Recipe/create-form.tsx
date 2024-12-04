@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from 'react-hook-form';
 import { z } from "zod";
@@ -19,10 +18,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
-import { Database } from '@/database.types';
 import { TagCombobox } from './tag-combobox';
-
-type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -37,20 +33,6 @@ const formSchema = z.object({
 
 export function RecipeForm() {
   const supabase = createClient();
-  const [tags, setTags] = useState<Tag[]>([]);
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      const { data: fetchedTags, error } = await supabase.from("tags").select('*');
-      if (error) {
-        console.error(error);
-      } else {
-        setTags(fetchedTags || []);
-      }
-    };
-
-    fetchTags();
-  }, [supabase]);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -68,7 +50,6 @@ export function RecipeForm() {
     // Do something with form values
     // This will be type-safe and validated
     console.log(values);
-    console.log(tags);
   }
 
   return (
@@ -127,13 +108,10 @@ export function RecipeForm() {
           name="tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tag(s)</FormLabel>
+              <FormLabel className="pr-4">Tag(s)</FormLabel>
               <FormControl>
                 <TagCombobox />
               </FormControl>
-              <FormDescription>
-                Notes that can help make the cooking process easier
-              </FormDescription>
             </FormItem>
           )}
         />

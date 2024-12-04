@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react"
+import { createClient } from '@/utils/supabase/client';
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button";
@@ -19,20 +20,28 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-const tags = [
-  {
-    value: "christmas",
-    label: "christmas",
-  },
-  {
-    value: "thanksgiving",
-    label: "thanksgiving",
-  },
-];
+import { Database } from '@/database.types';
+
+type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
 export function TagCombobox() {
+  const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [tags, setTags] = useState<Tag[]>([]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const { data: fetchedTags, error } = await supabase.from("tags").select('*');
+      if (error) {
+        console.error(error);
+      } else {
+        setTags(fetchedTags || []);
+      }
+    };
+
+    fetchTags();
+  }, [supabase]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -44,7 +53,7 @@ export function TagCombobox() {
           className="w-[200px] justify-between"
         >
           {value
-            ? tags.find((tag) => tag.value === value)?.label
+            ? tags.find((tag) => tag.name === value)?.name
             : "Select Tag..."}
           <ChevronsUpDown className="ml02 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -55,8 +64,8 @@ export function TagCombobox() {
           <CommandGroup>
             {tags.map((tag) => (
               <CommandItem
-                key={tag.value}
-                value={tag.value}
+                key={tag.name}
+                value={tag.name}
                 onSelect={(currentValue) => {
                   setValue(currentValue === value ? "" : currentValue);
                   setOpen(false);
@@ -65,10 +74,10 @@ export function TagCombobox() {
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === tag.value ? "opacity-100" : "opacity-0"
+                    value === tag.name ? "opacity-100" : "opacity-0"
                   )}
                 />
-                {tag.label}
+                {tag.name}
               </CommandItem>
             ))}
           </CommandGroup>
