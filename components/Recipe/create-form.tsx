@@ -28,7 +28,7 @@ const formSchema = z.object({
   }),
   notes: z.string(),
   description: z.string(),
-  tags: z.array(z.string()),
+  tags: z.string().nullable(),
 })
 
 export function RecipeForm() {
@@ -41,7 +41,7 @@ export function RecipeForm() {
       title: "",
       notes: "",
       description: "",
-      tags: [""],
+      tags: null,
     },
   })
 
@@ -110,7 +110,10 @@ export function RecipeForm() {
             <FormItem>
               <FormLabel className="pr-4">Tag(s)</FormLabel>
               <FormControl>
-                <TagCombobox />
+                <TagCombobox
+                  value={field.value}
+                  onChange={field.onChange}  
+                />
               </FormControl>
             </FormItem>
           )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react"
 import { createClient } from '@/utils/supabase/client';
 
@@ -24,10 +24,14 @@ import { Database } from '@/database.types';
 
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
-export function TagCombobox() {
+interface TagComboboxProps {
+  value: string | null;
+  onChange: (value: string| null) => void;
+}
+
+export const TagCombobox: React.FC<TagComboboxProps> = ({ value, onChange }) => {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
   const [tags, setTags] = useState<Tag[]>([]);
 
   useEffect(() => {
@@ -53,7 +57,7 @@ export function TagCombobox() {
           className="w-[200px] justify-between"
         >
           {value
-            ? tags.find((tag) => tag.name === value)?.name
+            ? tags.find((tag) => tag.id === value)?.name
             : "Select Tag..."}
           <ChevronsUpDown className="ml02 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -64,10 +68,10 @@ export function TagCombobox() {
           <CommandGroup>
             {tags.map((tag) => (
               <CommandItem
-                key={tag.name}
-                value={tag.name}
+                key={tag.id}
+                value={tag.id}
                 onSelect={(currentValue) => {
-                  setValue(currentValue === value ? "" : currentValue);
+                  onChange(currentValue === value ? null : currentValue); // Update form
                   setOpen(false);
                 }}
               >
