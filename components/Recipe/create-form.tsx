@@ -19,6 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
 import { TagCombobox } from './tag-combobox';
+import { TagMultiSelect } from './tag-multiselect';
+import { Trash2Icon } from 'lucide-react';
+// import { StepsInputs } from './steps-form';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -28,7 +31,8 @@ const formSchema = z.object({
   }),
   notes: z.string(),
   description: z.string(),
-  tag: z.string(),
+  tags: z.array(z.string()),
+  steps: z.array(z.string().min(1))
 })
 
 export function RecipeForm() {
@@ -41,7 +45,8 @@ export function RecipeForm() {
       title: "",
       notes: "",
       description: "",
-      tag: "",
+      tags: [""],
+      steps: [""],
     },
   })
 
@@ -103,21 +108,93 @@ export function RecipeForm() {
           )}
         />
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="tag"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="pr-4">Tag(s)</FormLabel>
+              <FormLabel className="pr-4">Tag</FormLabel>
               <FormControl>
                 <TagCombobox
                   value={field.value}
-                  onChange={field.onChange}  
+                  onChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        /> */}
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="pr-4">Tag(s)</FormLabel>
+              <FormControl>
+                <TagMultiSelect
+                  selectedTags={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="steps"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel className="pr-4">Steps</FormLabel>
+              <FormControl>
+                <div>
+                  {field.value.map((step, index) => (
+                    <div className="flex gap-4 mt-1" key={index}>
+                      <Input
+                        type="text"
+                        placeholder={`Step ${index + 1}`}
+                        className="w-full"
+                        value={step}
+                        onChange={(e) => {
+                          const updatedSteps = [...field.value];
+                          updatedSteps[index] = e.target.value;
+                          field.onChange(updatedSteps);
+                          form.trigger("steps");
+                        }}
+                      />
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          const updatedSteps = field.value.filter(
+                            (_, stepIndex) => stepIndex !== index
+                          );
+                          field.onChange(updatedSteps);
+                          form.trigger("steps");
+                        }}
+                      >
+                        <Trash2Icon />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </FormControl>
+              <Button
+                className="self-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const updatedSteps = [...form.getValues("steps"), ""];
+                  form.setValue("steps", updatedSteps);
+                  form.trigger("steps");
+                }}
+              >
+                Add Step
+              </Button>
+            </FormItem>
+          )}
+        />
+
+
+        {/* <StepsInputs /> */}
 
         <Button type="submit">Submit</Button>
       </form>
