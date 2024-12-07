@@ -47,6 +47,8 @@ export const TagCombobox: React.FC<TagComboboxProps> = ({ value, onChange }) => 
     fetchTags();
   }, [supabase]);
 
+  const selectedTag = tags.find((tag) => tag.id === value);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -56,9 +58,7 @@ export const TagCombobox: React.FC<TagComboboxProps> = ({ value, onChange }) => 
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value
-            ? tags.find((tag) => tag.id === value)?.name
-            : "Select Tag..."}
+          { selectedTag?.name ||  "Select Tag..." }
           <ChevronsUpDown className="ml02 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -69,16 +69,16 @@ export const TagCombobox: React.FC<TagComboboxProps> = ({ value, onChange }) => 
             {tags.map((tag) => (
               <CommandItem
                 key={tag.id}
-                value={tag.id}
-                onSelect={(currentValue) => {
-                  onChange(currentValue === value ? null : currentValue); // Update form
+                value={tag.name}
+                onSelect={() => {
+                  onChange(tag.id === value ? null : tag.id); // Update form
                   setOpen(false);
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === tag.name ? "opacity-100" : "opacity-0"
+                    value === tag.id ? "opacity-100" : "opacity-0"
                   )}
                 />
                 {tag.name}
