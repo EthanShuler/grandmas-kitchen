@@ -32,7 +32,12 @@ const formSchema = z.object({
   notes: z.string(),
   description: z.string(),
   tags: z.array(z.string()),
-  steps: z.array(z.string().min(1))
+  steps: z.array(z.string().min(1)),
+  ingredients: z.array(z.object({
+    ingredientName: z.string(),
+    quantity: z.string(),
+    unit: z.string(),
+  }))
 })
 
 export default function RecipeForm() {
@@ -47,6 +52,7 @@ export default function RecipeForm() {
       description: "",
       tags: [""],
       steps: [""],
+      ingredients: [{ ingredientName: "", quantity: "", unit: "" }]
     },
   })
 
@@ -134,6 +140,90 @@ export default function RecipeForm() {
 
           <FormField
             control={form.control}
+            name="ingredients"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="pr-4">Ingredients</FormLabel>
+                <FormControl>
+                  <div>
+                    {field.value.map((ingredient, index) => (
+                      <div className="flex gap-4 mt-1" key={index}>
+                        <div className="self-center w-5">
+                          <p className="self-start text-sm text-gray-500">{index + 1}.</p>
+                        </div>
+                        <Input
+                          type="text"
+                          placeholder={`Ingredient ${index + 1}`}
+                          className="w-full"
+                          value={ingredient.ingredientName}
+                          onChange={(e) => {
+                            const updatedIngredients = [...field.value];
+                            updatedIngredients[index].ingredientName = e.target.value;
+                            field.onChange(updatedIngredients);
+                            form.trigger("ingredients");
+                          }}
+                        />
+                        <Input
+                          type="text"
+                          placeholder={'Quantity'}
+                          className="w-full"
+                          value={ingredient.quantity}
+                          onChange={(e) => {
+                            const updatedIngredients = [...field.value];
+                            updatedIngredients[index].quantity = e.target.value;
+                            field.onChange(updatedIngredients);
+                            form.trigger("ingredients");
+                          }}
+                        />
+                        <Input
+                          type="text"
+                          placeholder={'Unit'}
+                          className="w-full"
+                          value={ingredient.unit}
+                          onChange={(e) => {
+                            const updatedIngredients = [...field.value];
+                            updatedIngredients[index].unit = e.target.value;
+                            field.onChange(updatedIngredients);
+                            form.trigger("ingredients");
+                          }}
+                        />
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            const updatedIngredients = field.value.filter(
+                              (_, stepIndex) => stepIndex !== index
+                            );
+                            field.onChange(updatedIngredients);
+                            form.trigger("ingredients");
+                          }}
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </FormControl>
+                <Button
+                  className="self-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const updatedIngredients = [...form.getValues("ingredients"), {
+                      ingredientName: "",
+                      quantity: "",
+                      unit: ""
+                    }];
+                    form.setValue("ingredients", updatedIngredients);
+                    form.trigger("ingredients");
+                  }}
+                >
+                  Add Ingredient
+                </Button>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="steps"
             render={({ field }) => (
               <FormItem className="flex flex-col">
@@ -143,7 +233,7 @@ export default function RecipeForm() {
                     {field.value.map((step, index) => (
                       <div className="flex gap-4 mt-1" key={index}>
                         <div className="self-center w-5">
-                          <p className="self-start text-sm text-gray-500">{index+1}.</p>
+                          <p className="self-start text-sm text-gray-500">{index + 1}.</p>
                         </div>
                         <Input
                           type="text"
