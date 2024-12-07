@@ -20,7 +20,7 @@ type YourRecipeComponentProps = {
 
 export const RecipeCard: React.FC<YourRecipeComponentProps> = ({ recipe }) => {
   return (
-    <Link key={recipe.id} href={`/recipes/${recipe.id}`} passHref>
+    <Link key={recipe.id} href={`/recipe/${recipe.id}`} passHref>
       <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer flex flex-col h-full min-h-[400px]">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-center">

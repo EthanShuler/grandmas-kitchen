@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 
 import { Database } from "@/database.types";
-import { Badge } from '../ui/badge';
+import { Badge } from '../../../components/ui/badge';
 
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
