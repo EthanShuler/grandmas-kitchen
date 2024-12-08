@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
 import { TagCombobox } from './tag-combobox';
 import { TagMultiSelect } from './tag-multiselect';
-import { Trash2Icon } from 'lucide-react';
+import { Trash2Icon, X } from 'lucide-react';
 // import { StepsInputs } from './steps-form';
 
 const formSchema = z.object({
@@ -35,7 +35,7 @@ const formSchema = z.object({
   steps: z.array(z.string().min(1)),
   ingredients: z.array(z.object({
     ingredientName: z.string(),
-    quantity: z.string(),
+    quantity: z.number(),
     unit: z.string(),
   }))
 })
@@ -52,15 +52,79 @@ export default function RecipeForm() {
       description: "",
       tags: [""],
       steps: [""],
-      ingredients: [{ ingredientName: "", quantity: "", unit: "" }]
+      ingredients: [{ ingredientName: "", quantity: 0, unit: "" }]
     },
   })
 
   // 2. Define a submit handler
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with form values
-    // This will be type-safe and validated
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+
+    //upsert recipe
+    const { data: recipe, error: recipeError } = await supabase
+      .from('recipes')
+      .insert({
+        title: values.title,
+        notes: values.notes,
+        description: values.description,
+      })
+      .select().single();
+    if (recipeError) {
+      console.error("Error inserting recipe:", recipeError);
+      return;
+    }
+
+    // upsert ingredients
+    const { data: upsertedIngredients, error: ingredientsError } = await supabase
+      .from('ingredients')
+      .upsert(values.ingredients.map((ingredient) => ({
+        name: ingredient.ingredientName,
+      })),
+        { onConflict: 'name' } // prevent duplicates based on name column
+      )
+      .select();
+    if (ingredientsError) {
+      console.error("Error inserting ingredients:", ingredientsError);
+      return;
+    }
+
+    // upsert recipe_ingredients
+    const recipeIngredientsData = values.ingredients.map((ingredient, index) => {
+      const matchingIngredient = upsertedIngredients.find((ing) => ing.name === ingredient.ingredientName);
+      if (!matchingIngredient?.id) {
+        console.error(`no ingredient for ${ingredient.ingredientName}`)
+        return null
+      }
+      return {
+        recipe_id: recipe.id,
+        ingredient_id: matchingIngredient.id,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        notes: null
+      }
+    }).filter((data) => data !== null); // filter out null, where ingredient_id not found
+    const { error: recipeIngredientsError } = await supabase
+      .from('recipe_ingredients')
+      .insert(recipeIngredientsData);
+    if (recipeIngredientsError) {
+      console.error("Error inserting recipe ingredients:", recipeIngredientsError);
+      return;
+    }
+
+    // upsert recipe_steps
+    const { error: recipeStepsError } = await supabase
+        .from('recipe_steps')
+        .insert(values.steps.map((step, index) => ({
+          recipe_id: recipe.id,
+          step_order: index,
+          description: step
+        })));
+    if (recipeStepsError) {
+      console.error("error inserting steps", recipeStepsError);
+      return;
+    }
+
+    // upsert recipe_tags
   }
 
   return (
@@ -170,7 +234,7 @@ export default function RecipeForm() {
                           value={ingredient.quantity}
                           onChange={(e) => {
                             const updatedIngredients = [...field.value];
-                            updatedIngredients[index].quantity = e.target.value;
+                            updatedIngredients[index].quantity = e.target.valueAsNumber;
                             field.onChange(updatedIngredients);
                             form.trigger("ingredients");
                           }}
@@ -209,7 +273,7 @@ export default function RecipeForm() {
                     e.preventDefault();
                     const updatedIngredients = [...form.getValues("ingredients"), {
                       ingredientName: "",
-                      quantity: "",
+                      quantity: 0,
                       unit: ""
                     }];
                     form.setValue("ingredients", updatedIngredients);
