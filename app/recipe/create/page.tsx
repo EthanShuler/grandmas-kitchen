@@ -1,7 +1,9 @@
 "use client"
 
+import { useEffect, useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { z } from "zod";
 import { createClient } from '@/utils/supabase/client';
 
@@ -18,10 +20,9 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from '@/components/ui/textarea';
-import { TagCombobox } from './tag-combobox';
 import { TagMultiSelect } from './tag-multiselect';
-import { Trash2Icon, X } from 'lucide-react';
-// import { StepsInputs } from './steps-form';
+import { Trash2Icon } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -41,9 +42,9 @@ const formSchema = z.object({
 })
 
 export default function RecipeForm() {
-  const supabase = createClient();
-
-  // 1. Define your form.
+  const router = useRouter();
+  const [user, setUser] = useState<User| null>(null);
+  const [loading, setLoading] = useState(true);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,12 +55,39 @@ export default function RecipeForm() {
       steps: [""],
       ingredients: [{ ingredientName: "", quantity: 0, unit: "" }]
     },
-  })
+  });
+  const supabase = createClient();
 
+  useEffect(() => {
+    async function getUser() {
+      try {
+        const { data, error} = await supabase.auth.getUser();
+        if (error || !data.user) {
+          setUser(null);
+          throw error
+        }
+        setUser(data.user);
+        // console.log('user');
+      } catch (error) {
+        console.error('error getting user', error)
+      } finally {
+        setLoading(false);
+      }
+    }
+    getUser();
+  }, []);
+
+  if (loading) {
+    return <p>loading...</p>
+  }
+
+  if (!user) {
+    router.push("/sign-in");
+    return null;
+  }
+  
   // 2. Define a submit handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-
     //upsert recipe
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
@@ -67,6 +95,7 @@ export default function RecipeForm() {
         title: values.title,
         notes: values.notes,
         description: values.description,
+        user_id: user?.id,
       })
       .select().single();
     if (recipeError) {
@@ -89,7 +118,7 @@ export default function RecipeForm() {
     }
 
     // upsert recipe_ingredients
-    const recipeIngredientsData = values.ingredients.map((ingredient, index) => {
+    const recipeIngredientsData = values.ingredients.map((ingredient) => {
       const matchingIngredient = upsertedIngredients.find((ing) => ing.name === ingredient.ingredientName);
       if (!matchingIngredient?.id) {
         console.error(`no ingredient for ${ingredient.ingredientName}`)
@@ -103,6 +132,7 @@ export default function RecipeForm() {
         notes: null
       }
     }).filter((data) => data !== null); // filter out null, where ingredient_id not found
+
     const { error: recipeIngredientsError } = await supabase
       .from('recipe_ingredients')
       .insert(recipeIngredientsData);
@@ -113,18 +143,30 @@ export default function RecipeForm() {
 
     // upsert recipe_steps
     const { error: recipeStepsError } = await supabase
-        .from('recipe_steps')
-        .insert(values.steps.map((step, index) => ({
-          recipe_id: recipe.id,
-          step_order: index,
-          description: step
-        })));
+      .from('recipe_steps')
+      .insert(values.steps.map((step, index) => ({
+        recipe_id: recipe.id,
+        step_order: index,
+        description: step
+      })));
     if (recipeStepsError) {
       console.error("error inserting steps", recipeStepsError);
       return;
     }
 
     // upsert recipe_tags
+    // const { error: recipeTagsError } = await supabase
+    //   .from('recipe_tags')
+    //   .insert(values.tags.map((t) => ({
+    //     tag_id: t,
+    //     recipe_id: recipe.id
+    //   })));
+    // if (recipeTagsError) {
+    //   console.error("Error inserting recipe tags:", recipeIngredientsError);
+    //   return;
+    // }
+    // console.log(values)
+    router.push('/');
   }
 
   return (
@@ -219,7 +261,7 @@ export default function RecipeForm() {
                           type="text"
                           placeholder={`Ingredient ${index + 1}`}
                           className="w-full"
-                          value={ingredient.ingredientName}
+                          value={ingredient.ingredientName.toLowerCase()}
                           onChange={(e) => {
                             const updatedIngredients = [...field.value];
                             updatedIngredients[index].ingredientName = e.target.value;
@@ -228,7 +270,7 @@ export default function RecipeForm() {
                           }}
                         />
                         <Input
-                          type="text"
+                          type="number"
                           placeholder={'Quantity'}
                           className="w-full"
                           value={ingredient.quantity}
