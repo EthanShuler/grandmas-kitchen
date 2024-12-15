@@ -80,12 +80,22 @@ export default async function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/sign-in" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+                <Button variant="outline">
+                  <Link href="/sign-in">
+                    Sign In
+                  </Link>
+                </Button>
+                <Button variant="default">
+                  <Link href="/sign-up">
+                    Sign Up
+                  </Link>
+                </Button>
+                {/* <Link href="/sign-in" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
                   Sign in
                 </Link>
                 <Link href="/sign-up" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
                   Sign Up
-                </Link>
+                </Link> */}
               </>
             )}
           </div>
@@ -113,14 +123,14 @@ export default async function Navbar() {
         {user ? (
           <>
             <Link
-            href="/recipe/create"
-            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
+              href="/recipe/create"
+              className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
             font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none
             disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950
             dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50
             dark:data-[state=open]:bg-gray-800/50"
-            prefetch={false}
-          >
+              prefetch={false}
+            >
               Add a recipe
             </Link>
             <form action={signOutAction}>
@@ -132,7 +142,18 @@ export default async function Navbar() {
 
         ) : (
           <>
-            <Link
+            <Button variant="outline">
+              <Link href="/sign-in">
+                Sign In
+              </Link>
+            </Button>
+            <Button variant="default">
+              <Link href="/sign-up">
+                Sign Up
+              </Link>
+            </Button>
+
+            {/* <Link
               href="/sign-in"
               className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
             font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none
@@ -153,7 +174,7 @@ export default async function Navbar() {
               prefetch={false}
             >
               Sign up
-            </Link>
+            </Link> */}
           </>
         )}
       </nav>
