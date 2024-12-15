@@ -2,32 +2,40 @@
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import HeaderAuth from './header-auth';
+import { createClient } from "@/utils/supabase/server";
+import { signOutAction } from "@/app/actions";
 import { MenuIcon, CookingPotIcon } from 'lucide-react';
 
-export default function Navbar() {
-  const links = [
-    {
-      id: 0,
-      text: "Home",
-      url: "#"
-    },
-    {
-      id: 1,
-      text: "About",
-      url: "#"
-    },
-    {
-      id: 2,
-      text: "Contact",
-      url: "#"
-    },
-    {
-      id: 3,
-      text: "Services",
-      url: "#"
-    },
-  ]
+const links = [
+  {
+    id: 0,
+    text: "Home",
+    url: "#"
+  },
+  {
+    id: 1,
+    text: "About",
+    url: "#"
+  },
+  {
+    id: 2,
+    text: "Contact",
+    url: "#"
+  },
+  {
+    id: 3,
+    text: "Services",
+    url: "#"
+  },
+];
+
+export default async function Navbar() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     // <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
     //   <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
@@ -59,6 +67,27 @@ export default function Navbar() {
                 {link.text}
               </Link>
             ))}
+            {user ? (
+              <>
+                <Link href="/recipe/create" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+                  Add a recipe
+                </Link>
+                <form action={signOutAction}>
+                  <Button>
+                    Sign Out
+                  </Button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+                  Sign in
+                </Link>
+                <Link href="/sign-up" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -81,6 +110,52 @@ export default function Navbar() {
             {link.text}
           </Link>
         ))}
+        {user ? (
+          <>
+            <Link
+            href="/recipe/create"
+            className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
+            font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none
+            disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950
+            dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50
+            dark:data-[state=open]:bg-gray-800/50"
+            prefetch={false}
+          >
+              Add a recipe
+            </Link>
+            <form action={signOutAction}>
+              <Button>
+                Sign Out
+              </Button>
+            </form>
+          </>
+
+        ) : (
+          <>
+            <Link
+              href="/sign-in"
+              className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
+            font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none
+            disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950
+            dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50
+            dark:data-[state=open]:bg-gray-800/50"
+              prefetch={false}
+            >
+              Sign In
+            </Link>
+            <Link
+              href="sign-up"
+              className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm
+            font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none
+            disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950
+            dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50
+            dark:data-[state=open]:bg-gray-800/50"
+              prefetch={false}
+            >
+              Sign up
+            </Link>
+          </>
+        )}
       </nav>
     </header>
   )
