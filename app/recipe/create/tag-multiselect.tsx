@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/popover";
 
 import { Database } from "@/database.types";
-import { Badge } from '../../../components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
 interface TagComboboxProps {
-  selectedTags: string[] 
+  selectedTags: string[]
   onChange: (ids: string[] | null) => void; // Callback to update form state
 }
 

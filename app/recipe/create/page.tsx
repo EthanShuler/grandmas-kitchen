@@ -51,7 +51,7 @@ export default function RecipeForm() {
       title: "",
       notes: "",
       description: "",
-      tags: [""],
+      tags: [],
       steps: [""],
       ingredients: [{ ingredientName: "", quantity: 0, unit: "" }]
     },
@@ -155,17 +155,17 @@ export default function RecipeForm() {
     }
 
     // upsert recipe_tags
-    // const { error: recipeTagsError } = await supabase
-    //   .from('recipe_tags')
-    //   .insert(values.tags.map((t) => ({
-    //     tag_id: t,
-    //     recipe_id: recipe.id
-    //   })));
-    // if (recipeTagsError) {
-    //   console.error("Error inserting recipe tags:", recipeIngredientsError);
-    //   return;
-    // }
-    // console.log(values)
+    const { error: recipeTagsError } = await supabase
+      .from('recipe_tags')
+      .insert(values.tags.map((t) => ({
+        tag_id: t,
+        recipe_id: recipe.id
+      })));
+    if (recipeTagsError) {
+      console.error("Error inserting recipe tags:", recipeIngredientsError);
+      return;
+    }
+
     router.push('/');
   }
 
