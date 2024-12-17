@@ -2,6 +2,7 @@ import { Database } from '@/database.types';
 import React from 'react';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Ingredients } from '@/components/Recipe/ingredients';
 import { Steps } from '@/components/Recipe/steps';
@@ -38,6 +39,8 @@ export const RecipeCard: React.FC<YourRecipeComponentProps> = ({ recipe }) => {
               <h3 className="font-bold tex-lg">Notes</h3>
               <p className="text-sm text-gray-700">{recipe.notes}</p>
             </section>
+          )}
+          {recipe.recipe_tags?.map((tag) => <Badge key={tag.tags?.id} variant="outline">{tag.tags?.name}</Badge>
           )}
         </CardContent>
       </Card>
