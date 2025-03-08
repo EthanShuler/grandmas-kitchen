@@ -29,21 +29,22 @@ function isUUID ( uuid: string ) {
   return uuid.match('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') === null ? false : true;
 }
 
+// Update the form schema to make id required but not ingredientName
 const formSchema = z.object({
   title: z.string().min(2, {
     message: "Recipe Title must be at least 2 characters.",
   }).max(50, {
-    message: "Recipe Title muste be less than 50 characters"
+    message: "Recipe Title must be less than 50 characters"
   }),
   notes: z.string(),
   description: z.string(),
   tags: z.array(z.string()),
   steps: z.array(z.string().min(1)),
   ingredients: z.array(z.object({
-    ingredientName: z.string(),
+    id: z.string().uuid("Invalid ingredient ID"),
     quantity: z.number(),
     unit: z.string(),
-    id: z.string(),
+    ingredientName: z.string().optional(), // Make optional since we're using id now
   }))
 })
 
@@ -51,6 +52,7 @@ export default function RecipeForm() {
   const router = useRouter();
   const [user, setUser] = useState<User| null>(null);
   const [loading, setLoading] = useState(true);
+  // Also update the default values in useForm
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +61,7 @@ export default function RecipeForm() {
       description: "",
       tags: [],
       steps: [""],
-      ingredients: [{ ingredientName: "", quantity: 0, unit: "", id: "" }]
+      ingredients: [{ id: "", quantity: 0, unit: "", ingredientName: "" }]
     },
   });
   const supabase = createClient();
@@ -111,20 +113,6 @@ export default function RecipeForm() {
       console.error("Error inserting recipe:", recipeError);
       return;
     }
-
-    // upsert ingredients
-    // const { data: upsertedIngredients, error: ingredientsError } = await supabase
-    //   .from('ingredients')
-    //   .upsert(values.ingredients.map((ingredient) => ({
-    //     name: ingredient.ingredientName,
-    //   })),
-    //     { onConflict: 'name' } // prevent duplicates based on name column
-    //   )
-    //   .select();
-    // if (ingredientsError) {
-    //   console.error("Error inserting ingredients:", ingredientsError);
-    //   return;
-    // }
 
     // upsert recipe_ingredients
     const recipeIngredientsData = values.ingredients.map((ingredient) => {
@@ -271,18 +259,7 @@ export default function RecipeForm() {
                             }}
                           />
                         </div>
-                        {/* <Input
-                          type="text"
-                          placeholder={`Ingredient ${index + 1}`}
-                          className="w-full"
-                          value={ingredient.ingredientName.toLowerCase()}
-                          onChange={(e) => {
-                            const updatedIngredients = [...field.value];
-                            updatedIngredients[index].ingredientName = e.target.value;
-                            field.onChange(updatedIngredients);
-                            form.trigger("ingredients");
-                          }}
-                        /> */}
+                        
                         <Input
                           type="number"
                           placeholder={'Quantity'}
@@ -328,10 +305,10 @@ export default function RecipeForm() {
                   onClick={(e) => {
                     e.preventDefault();
                     const updatedIngredients = [...form.getValues("ingredients"), {
-                      ingredientName: "",
+                      id: "",
                       quantity: 0,
                       unit: "",
-                      id: "",
+                      ingredientName: "",
                     }];
                     form.setValue("ingredients", updatedIngredients);
                     form.trigger("ingredients");
