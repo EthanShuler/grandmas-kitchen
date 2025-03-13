@@ -1,6 +1,7 @@
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
 import Search from '@/components/search';
+import CommandSearch from "@/components/command-search";
 import Link from 'next/link';
 import { createClient } from "@/utils/supabase/server";
 import { signOutAction } from "@/app/actions";
@@ -98,7 +99,8 @@ export default async function Navbar() {
 
         {/* Center - Search */}
         <div className="flex-1 max-w-md mx-auto">
-          <Search />
+          {/* <Search /> */}
+          <CommandSearch />
         </div>
 
         {/* Right side - Navigation links (only on large screens) */}

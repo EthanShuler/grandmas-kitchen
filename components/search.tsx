@@ -4,20 +4,30 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search as SearchIcon } from "lucide-react"
-
+import { createClient } from '@/utils/supabase/client'
+import { Database } from '@/database.types'
 
 interface SearchProps {
   placeholder?: string
   onSearch?: (query: string) => void
 }
 
-export default function Search({ placeholder = "Search...", onSearch }: SearchProps) {
+export default function Search({ placeholder = "Search..." }: SearchProps) {
   const [query, setQuery] = useState("")
+  const [results, setResults] = useState<Database['public']['Tables']['recipes']['Row'][]>([])
+  const supabase = createClient()
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (onSearch) {
-      onSearch(query)
+    const { data, error } = await supabase
+      .from('recipes')
+      .select()
+      .textSearch('title', query)
+    if (error) {
+      console.error('error searching', error)
+    }
+    if (data) {
+      setResults(data)
     }
   }
 
