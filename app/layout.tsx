@@ -36,15 +36,17 @@ export default function RootLayout({
                 {children}
               </div>
 
-              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-                <p>
+              <footer className="w-full flex flex-wrap items-center justify-center border-t mx-auto text-center text-xs gap-2 md:gap-8 py-8 md:py-16 px-4">
+                <p className="mb-2 md:mb-0">
                   Built with love for Grandma Pat and the cousins 
                 </p>
-                <HeartIcon color="red" fill="pink" />
-                <p>
+                <HeartIcon color="red" fill="pink" className="mx-1 md:mx-0" />
+                <p className="mb-2 md:mb-0">
                   By Abby and Ethan
                 </p>
-                <ThemeSwitcher />
+                <div className="w-full md:w-auto flex justify-center mt-2 md:mt-0">
+                  <ThemeSwitcher />
+                </div>
               </footer>
             </div>
           </main>

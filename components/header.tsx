@@ -1,6 +1,5 @@
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
-import Search from '@/components/search';
 import CommandSearch from "@/components/command-search";
 import Link from 'next/link';
 import { createClient } from "@/utils/supabase/server";

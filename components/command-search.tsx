@@ -17,10 +17,7 @@ export default function CommandSearch() {
       setResults([]);
       return;
     }
-    // const { data, error } = await supabase
-    //   .from('recipes')
-    //   .select()
-    //   .textSearch('title', value);
+    
     const { data, error } = await supabase.rpc('search_recipes_by_title', { prefix: value})
     if (error) {
       console.error('error searching', error);

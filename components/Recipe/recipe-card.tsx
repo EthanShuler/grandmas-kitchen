@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ChefHat, BookOpen, Tag } from 'lucide-react';
+import { ChefHat, BookOpen, Tag, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 type RecipeWithRelations = Database["public"]["Tables"]["recipes"]["Row"] & {
@@ -13,6 +13,7 @@ type RecipeWithRelations = Database["public"]["Tables"]["recipes"]["Row"] & {
   recipe_ingredients: (Database["public"]["Tables"]["recipe_ingredients"]["Row"] & {
     ingredients: Database["public"]["Tables"]["ingredients"]["Row"] | null;
   })[];
+  profiles: Database["public"]["Tables"]["profiles"]["Row"] | null;
 };
 
 type YourRecipeComponentProps = {
@@ -32,6 +33,12 @@ export const RecipeCard: React.FC<YourRecipeComponentProps> = ({ recipe }) => {
           <CardDescription className="line-clamp-2 text-foreground/80">
             {recipe?.description || "No Description Available"}
           </CardDescription>
+          
+          {/* User information */}
+          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+            <User className="h-3.5 w-3.5" />
+            <span>{recipe.profiles?.first_name || "Anonymous"}</span>
+          </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-4 pt-4">
           

@@ -24,7 +24,8 @@ async function Recipes() {
       `*,
     recipe_steps(*),
     recipe_tags(tags(*)),
-    recipe_ingredients(*, ingredients(*))`
+    recipe_ingredients(*, ingredients(*)),
+    profiles(*)`
     );
 
   if (error) {
