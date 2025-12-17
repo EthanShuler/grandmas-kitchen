@@ -1,0 +1,217 @@
+@baseUrl = http://localhost:3001/api
+@token = your-jwt-token-here
+
+### Health Check
+GET http://localhost:3001/health
+
+### ==================== AUTH ====================
+
+### Register new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "ethanshuler",
+  "email": "13thanshuler@gmail.com",
+  "password": "password123"
+}
+
+### Login
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+###
+
+@token = {{Login.response.body.token}}
+
+### Get current user
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### ==================== USERS ====================
+
+### Get all users (admin only)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+### Get user by ID
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{token}}
+
+### Update user
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "username": "updateduser",
+  "avatar_url": "https://example.com/avatar.jpg"
+}
+
+### Delete user (admin only)
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{token}}
+
+### ==================== RECIPES ====================
+
+### Get all recipes
+GET {{baseUrl}}/recipes
+
+### Get recipe by ID
+GET {{baseUrl}}/recipes/1
+
+### Create new recipe
+POST {{baseUrl}}/recipes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Grandma's Chocolate Chip Cookies",
+  "description": "Classic chocolate chip cookies that everyone loves",
+  "prep_time": 15,
+  "cook_time": 12,
+  "servings": 24,
+  "ingredients": [
+    {
+      "name": "all-purpose flour",
+      "amount": 2.25,
+      "unit": "cups"
+    },
+    {
+      "name": "butter",
+      "amount": 1,
+      "unit": "cup"
+    },
+    {
+      "name": "sugar",
+      "amount": 0.75,
+      "unit": "cup"
+    },
+    {
+      "name": "brown sugar",
+      "amount": 0.75,
+      "unit": "cup"
+    },
+    {
+      "name": "eggs",
+      "amount": 2,
+      "unit": "large"
+    },
+    {
+      "name": "vanilla extract",
+      "amount": 2,
+      "unit": "tsp"
+    },
+    {
+      "name": "baking soda",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "name": "salt",
+      "amount": 1,
+      "unit": "tsp"
+    },
+    {
+      "name": "chocolate chips",
+      "amount": 2,
+      "unit": "cups"
+    }
+  ],
+  "steps": [
+    "Preheat oven to 375°F (190°C)",
+    "Cream together butter, sugar, and brown sugar until fluffy",
+    "Beat in eggs and vanilla",
+    "In a separate bowl, combine flour, baking soda, and salt",
+    "Gradually blend dry ingredients into wet ingredients",
+    "Stir in chocolate chips",
+    "Drop rounded tablespoons of dough onto ungreased cookie sheets",
+    "Bake for 9-11 minutes or until golden brown",
+    "Cool on baking sheet for 2 minutes before removing to a wire rack"
+  ],
+  "tags": ["dessert", "cookies", "chocolate", "baking"]
+}
+
+### Update recipe
+PUT {{baseUrl}}/recipes/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Recipe Title",
+  "description": "Updated description",
+  "prep_time": 20,
+  "cook_time": 15
+}
+
+### Delete recipe
+DELETE {{baseUrl}}/recipes/1
+Authorization: Bearer {{token}}
+
+### ==================== INGREDIENTS ====================
+
+### Get all ingredients
+GET {{baseUrl}}/ingredients
+
+### Get ingredient by ID
+GET {{baseUrl}}/ingredients/1
+
+### Create new ingredient
+POST {{baseUrl}}/ingredients
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "cinnamon"
+}
+
+### Update ingredient (admin only)
+PUT {{baseUrl}}/ingredients/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "ground cinnamon"
+}
+
+### Delete ingredient (admin only)
+DELETE {{baseUrl}}/ingredients/1
+Authorization: Bearer {{token}}
+
+### ==================== TAGS ====================
+
+### Get all tags
+GET {{baseUrl}}/tags
+
+### Get tag by ID
+GET {{baseUrl}}/tags/1
+
+### Get recipes by tag
+GET {{baseUrl}}/tags/1/recipes
+
+### Create new tag
+POST {{baseUrl}}/tags
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "comfort food"
+}
+
+### Update tag (admin only)
+PUT {{baseUrl}}/tags/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "comfort-food"
+}
+
+### Delete tag (admin only)
+DELETE {{baseUrl}}/tags/1
+Authorization: Bearer {{token}}
