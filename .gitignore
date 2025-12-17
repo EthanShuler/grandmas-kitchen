@@ -1,6 +1,15 @@
 .DS_Store
 .env
 /node_modules/
+/client/node_modules/
+/client/build/
+/server/node_modules/
+/server/build/
+/client/.react-router/
+/client/.env
+/server/.env
+/client/.DS_Store
+/server/.DS_Store
 
 # React Router
 /.react-router/
