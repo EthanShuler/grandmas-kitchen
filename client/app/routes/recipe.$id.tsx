@@ -1,16 +1,16 @@
 import { Container, Title, Text, Paper, Badge, Group, Stack, List, Divider, Button } from '@mantine/core';
 import { Link, useLoaderData } from 'react-router';
 import type { Route } from './+types/recipe.$id';
-import { api } from '../lib/api';
-import type { Recipe } from '../types';
+import { api } from '@/lib/api';
+import type { Recipe } from '@/types';
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const recipe = await api.getRecipe(Number(params.id));
+export async function loader({ params }: Route.LoaderArgs): Promise<{ recipe: Recipe | null }> {
+  const recipe = await api.getRecipe(Number(params.id)) as Recipe | null;
   return { recipe };
 }
 
 export function meta({ data }: Route.MetaArgs) {
-  const recipe = data?.recipe as Recipe;
+  const recipe = data?.recipe as Recipe | undefined;
   return [
     { title: `${recipe?.title || 'Recipe'} - Grandma's Kitchen` },
     { name: "description", content: recipe?.description || 'View recipe details' },
@@ -18,7 +18,18 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function RecipeDetail() {
-  const { recipe } = useLoaderData<typeof loader>() as { recipe: Recipe };
+  const { recipe } = useLoaderData<typeof loader>();
+
+  if (!recipe) {
+    return (
+      <Container size="md" py="xl">
+        <Title order={1}>Recipe not found</Title>
+        <Button component={Link} to="/" variant="subtle" mt="md">
+          ← Back to recipes
+        </Button>
+      </Container>
+    );
+  }
 
   return (
     <Container size="md" py="xl">

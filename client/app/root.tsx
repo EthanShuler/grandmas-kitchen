@@ -5,7 +5,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  Link,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -14,25 +13,14 @@ import '@mantine/core/styles.css';
 import { 
   MantineProvider, 
   createTheme, 
-  AppShell, 
-  Group, 
-  Button, 
-  Title,
-  Menu,
-  Avatar,
-  Text,
-  UnstyledButton,
-  Modal,
-  TextInput,
-  PasswordInput,
-  Stack,
+  AppShell,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-import { IconChevronDown, IconLogout, IconUser } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
-import { api } from './lib/api';
-import type { User } from './types';
+import { useState } from 'react';
+import { api } from '@/lib/api';
+import type { User } from '@/types';
+import { Navbar, LoginModal, RegisterModal } from '@/components';
+import { AuthProvider, useAuth } from '@/lib/auth-context';
 import "./app.css";
 
 const theme = createTheme({
@@ -73,39 +61,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
   const [loginOpened, { open: openLogin, close: closeLogin }] = useDisclosure(false);
   const [registerOpened, { open: openRegister, close: closeRegister }] = useDisclosure(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const loginForm = useForm({
-    initialValues: { email: '', password: '' },
-    validate: {
-      email: (value) => (!value ? 'Email is required' : null),
-      password: (value) => (!value ? 'Password is required' : null),
-    },
-  });
-
-  const registerForm = useForm({
-    initialValues: { username: '', email: '', password: '' },
-    validate: {
-      username: (value) => (!value ? 'Username is required' : null),
-      email: (value) => (!value ? 'Email is required' : null),
-      password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
-    },
-  });
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.getCurrentUser()
-        .then((userData) => setUser(userData as User))
-        .catch(() => {
-          localStorage.removeItem('token');
-        });
-    }
-  }, []);
 
   const handleLogin = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -113,9 +72,9 @@ export default function App() {
     try {
       const response = await api.login(values.email, values.password) as { token: string; user: User };
       localStorage.setItem('token', response.token);
-      setUser(response.user);
       closeLogin();
-      loginForm.reset();
+      // Reload the page to trigger auth context to load the user
+      window.location.reload();
     } catch (err: any) {
       setError(err.message || 'Failed to login');
     } finally {
@@ -129,9 +88,9 @@ export default function App() {
     try {
       const response = await api.register(values.username, values.email, values.password) as { token: string; user: User };
       localStorage.setItem('token', response.token);
-      setUser(response.user);
       closeRegister();
-      registerForm.reset();
+      // Reload the page to trigger auth context to load the user
+      window.location.reload();
     } catch (err: any) {
       setError(err.message || 'Failed to register');
     } finally {
@@ -139,153 +98,71 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const handleSwitchToRegister = () => {
+    closeLogin();
+    openRegister();
+    setError(null);
+  };
+
+  const handleSwitchToLogin = () => {
+    closeRegister();
+    openLogin();
+    setError(null);
   };
 
   return (
     <MantineProvider theme={theme} forceColorScheme="light">
-      <AppShell
-        header={{ height: 60 }}
-        padding="md"
-      >
-        <AppShell.Header>
-          <Group h="100%" px="md" justify="space-between">
-            <UnstyledButton component={Link} to="/">
-              <Title order={3} c="orange">🍳 Grandma's Kitchen</Title>
-            </UnstyledButton>
+      <AuthProvider>
+        <AppContent
+          onLoginClick={openLogin}
+          onRegisterClick={openRegister}
+        />
+        
+        <LoginModal
+          opened={loginOpened}
+          onClose={closeLogin}
+          onLogin={handleLogin}
+          onSwitchToRegister={handleSwitchToRegister}
+          loading={loading}
+          error={error}
+        />
 
-            <Group>
-              {user ? (
-                <Menu shadow="md" width={200}>
-                  <Menu.Target>
-                    <UnstyledButton>
-                      <Group gap="xs">
-                        <Avatar 
-                          src={user.avatar_url} 
-                          radius="xl" 
-                          size="sm"
-                          color="orange"
-                        >
-                          {user.username.charAt(0).toUpperCase()}
-                        </Avatar>
-                        <Text size="sm" fw={500}>{user.username}</Text>
-                        <IconChevronDown size={14} />
-                      </Group>
-                    </UnstyledButton>
-                  </Menu.Target>
-
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<IconUser size={14} />}>
-                      Profile
-                    </Menu.Item>
-                    <Menu.Divider />
-                    <Menu.Item 
-                      leftSection={<IconLogout size={14} />} 
-                      color="red"
-                      onClick={handleLogout}
-                    >
-                      Logout
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              ) : (
-                <Group gap="xs">
-                  <Button variant="subtle" onClick={openLogin}>Log in</Button>
-                  <Button onClick={openRegister}>Sign up</Button>
-                </Group>
-              )}
-            </Group>
-          </Group>
-        </AppShell.Header>
-
-        <AppShell.Main>
-          <Outlet />
-        </AppShell.Main>
-      </AppShell>
-
-      {/* Login Modal */}
-      <Modal opened={loginOpened} onClose={closeLogin} title="Log in" centered>
-        <form onSubmit={loginForm.onSubmit(handleLogin)}>
-          <Stack>
-            {error && <Text c="red" size="sm">{error}</Text>}
-            <TextInput
-              label="Email"
-              placeholder="your@email.com"
-              {...loginForm.getInputProps('email')}
-            />
-            <PasswordInput
-              label="Password"
-              placeholder="Your password"
-              {...loginForm.getInputProps('password')}
-            />
-            <Button type="submit" fullWidth loading={loading}>
-              Log in
-            </Button>
-            <Text size="sm" ta="center">
-              Don't have an account?{' '}
-              <Text
-                component="button"
-                type="button"
-                c="orange"
-                style={{ cursor: 'pointer', background: 'none', border: 'none' }}
-                onClick={() => {
-                  closeLogin();
-                  openRegister();
-                  setError(null);
-                }}
-              >
-                Sign up
-              </Text>
-            </Text>
-          </Stack>
-        </form>
-      </Modal>
-
-      {/* Register Modal */}
-      <Modal opened={registerOpened} onClose={closeRegister} title="Create an account" centered>
-        <form onSubmit={registerForm.onSubmit(handleRegister)}>
-          <Stack>
-            {error && <Text c="red" size="sm">{error}</Text>}
-            <TextInput
-              label="Username"
-              placeholder="Your username"
-              {...registerForm.getInputProps('username')}
-            />
-            <TextInput
-              label="Email"
-              placeholder="your@email.com"
-              {...registerForm.getInputProps('email')}
-            />
-            <PasswordInput
-              label="Password"
-              placeholder="Choose a password"
-              {...registerForm.getInputProps('password')}
-            />
-            <Button type="submit" fullWidth loading={loading}>
-              Sign up
-            </Button>
-            <Text size="sm" ta="center">
-              Already have an account?{' '}
-              <Text
-                component="button"
-                type="button"
-                c="orange"
-                style={{ cursor: 'pointer', background: 'none', border: 'none' }}
-                onClick={() => {
-                  closeRegister();
-                  openLogin();
-                  setError(null);
-                }}
-              >
-                Log in
-              </Text>
-            </Text>
-          </Stack>
-        </form>
-      </Modal>
+        <RegisterModal
+          opened={registerOpened}
+          onClose={closeRegister}
+          onRegister={handleRegister}
+          onSwitchToLogin={handleSwitchToLogin}
+          loading={loading}
+          error={error}
+        />
+      </AuthProvider>
     </MantineProvider>
+  );
+}
+
+function AppContent({ 
+  onLoginClick, 
+  onRegisterClick 
+}: { 
+  onLoginClick: () => void; 
+  onRegisterClick: () => void;
+}) {
+  const { user, logout } = useAuth();
+
+  return (
+    <AppShell header={{ height: 60 }} padding="md">
+      <AppShell.Header>
+        <Navbar
+          onLoginClick={onLoginClick}
+          onRegisterClick={onRegisterClick}
+          onLogout={logout}
+        />
+      </AppShell.Header>
+
+      <AppShell.Main>
+        <Outlet />
+      </AppShell.Main>
+    </AppShell>
   );
 }
 
