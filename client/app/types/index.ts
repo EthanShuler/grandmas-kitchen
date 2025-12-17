@@ -14,6 +14,7 @@ export interface Recipe {
   prep_time?: number;
   cook_time?: number;
   servings?: number;
+  source?: string;
   created_by?: number;
   author?: string;
   created_at: string;
@@ -66,6 +67,7 @@ export interface CreateRecipeInput {
   prep_time?: number;
   cook_time?: number;
   servings?: number;
+  source?: string;
   notes?: string;
   image_url?: string;
   instructions?: string;

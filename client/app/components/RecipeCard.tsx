@@ -1,4 +1,4 @@
-import { Card, Text, Badge, Group } from '@mantine/core';
+import { Card, Text, Badge, Group, Image } from '@mantine/core';
 import { Link } from 'react-router';
 import type { Recipe } from '@/types';
 
@@ -10,7 +10,18 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
   const cardContent = (
     <>
-      <Group justify="space-between" mb="xs">
+      {recipe.image_url && (
+        <Card.Section>
+          <Image
+            src={recipe.image_url}
+            alt={recipe.title}
+            height={160}
+            fit="cover"
+          />
+        </Card.Section>
+      )}
+      
+      <Group justify="space-between" mb="xs" mt="md">
         <Text fw={500} size="lg" lineClamp={1}>{recipe.title}</Text>
       </Group>
 

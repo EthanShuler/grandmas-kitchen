@@ -25,6 +25,7 @@ export function RecipeForm({
       prep_time: initialValues?.prep_time,
       cook_time: initialValues?.cook_time,
       servings: initialValues?.servings,
+      source: initialValues?.source || '',
       notes: initialValues?.notes || '',
       image_url: initialValues?.image_url || '',
       instructions: initialValues?.instructions || '',
@@ -69,6 +70,12 @@ export function RecipeForm({
               placeholder="A classic family recipe that everyone loves"
               minRows={3}
               {...form.getInputProps('description')}
+            />
+
+            <TextInput
+              label="Source"
+              placeholder="Grandma, Mom, Uncle Joe, etc."
+              {...form.getInputProps('source')}
             />
 
             <Group grow>
@@ -251,6 +258,7 @@ export function recipeToFormValues(recipe: Recipe): CreateRecipeInput {
     prep_time: recipe.prep_time,
     cook_time: recipe.cook_time,
     servings: recipe.servings,
+    source: recipe.source || '',
     notes: recipe.notes || '',
     image_url: recipe.image_url || '',
     instructions: recipe.instructions || '',

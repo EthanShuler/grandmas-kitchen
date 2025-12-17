@@ -51,7 +51,7 @@ export default function RecipeDetail() {
       )}
 
       {user && user.username === recipe.author && (
-        <Button 
+        <Button
           component={Link}
           to={`/recipe/${recipe.id}/edit`}
           variant="outline"
@@ -62,7 +62,7 @@ export default function RecipeDetail() {
       )}
 
       <Title order={1} mb="sm">{recipe.title}</Title>
-      
+
       {recipe.description && (
         <Text size="lg" c="dimmed" mb="md">
           {recipe.description}
@@ -117,6 +117,24 @@ export default function RecipeDetail() {
               </List>
             </Paper>
 
+            {recipe.notes && (
+              <Paper shadow="xs" p="md" withBorder bg="orange.0">
+                <Title order={3} size="h4" mb="sm">Notes</Title>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.notes}</Text>
+              </Paper>
+            )}
+
+            {recipe.instructions && (
+              <Paper shadow="xs" p="md" withBorder>
+                <Title order={3} size="h4" mb="sm">Instructions</Title>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</Text>
+              </Paper>
+            )}
+          </Stack>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Stack gap="xl">
             <Paper shadow="xs" p="md" withBorder>
               <Title order={2} size="h3" mb="md">Steps</Title>
               <List spacing="md" type="ordered">
@@ -127,24 +145,7 @@ export default function RecipeDetail() {
                 ))}
               </List>
             </Paper>
-          </Stack>
-        </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack gap="xl">
-            {recipe.notes && (
-              <Paper shadow="xs" p="md" withBorder bg="orange.0">
-                <Title order={3} size="h4" mb="sm">Notes</Title>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.notes}</Text>
-              </Paper>
-            )}
-
-            {recipe.instructions && (
-              <Paper shadow="xs" p="md" withBorder bg="blue.0">
-                <Title order={3} size="h4" mb="sm">Instructions</Title>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</Text>
-              </Paper>
-            )}
           </Stack>
         </Grid.Col>
       </Grid>
@@ -156,6 +157,12 @@ export default function RecipeDetail() {
             Recipe by {recipe.author}
           </Text>
         </>
+      )}
+
+      {recipe.source && (
+        <Text size="sm" c="dimmed" mt="xs">
+          Origin: {recipe.source}
+        </Text>
       )}
     </Container>
   );
