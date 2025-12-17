@@ -14,6 +14,9 @@ import {
   MantineProvider, 
   createTheme, 
   AppShell,
+  Burger,
+  Title,
+  Group
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
@@ -148,16 +151,28 @@ function AppContent({
   onRegisterClick: () => void;
 }) {
   const { user, logout } = useAuth();
+  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(false);
 
   return (
-    <AppShell header={{ height: 60 }} padding="md">
+    <AppShell
+      header={{ height: 60 }}
+      padding="md"
+      navbar={{ width: 280, breakpoint: 'sm', collapsed: { mobile: !navbarOpened, desktop: false } }}
+    >
       <AppShell.Header>
+        <Group h="100%" px="md">
+          <Burger opened={navbarOpened} onClick={toggleNavbar} hiddenFrom="sm" size="sm" />
+          <Title size="h4">Grandma's Kitchen</Title>
+        </Group>
+      </AppShell.Header>
+      <AppShell.Navbar p="md">
         <Navbar
           onLoginClick={onLoginClick}
           onRegisterClick={onRegisterClick}
           onLogout={logout}
+          onClose={toggleNavbar}
         />
-      </AppShell.Header>
+      </AppShell.Navbar>
 
       <AppShell.Main>
         <Outlet />
