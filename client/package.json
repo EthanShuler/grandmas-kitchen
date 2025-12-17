@@ -18,6 +18,7 @@
     "@mantine/tiptap": "^8.3.10",
     "@react-router/node": "7.10.1",
     "@react-router/serve": "7.10.1",
+    "@tabler/icons-react": "^3.36.0",
     "@tiptap/extension-link": "^3.13.0",
     "@tiptap/pm": "^3.13.0",
     "@tiptap/react": "^3.13.0",
@@ -30,14 +31,12 @@
   },
   "devDependencies": {
     "@react-router/dev": "7.10.1",
-    "@tailwindcss/vite": "^4.1.13",
     "@types/node": "^22",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.5.6",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4"
