@@ -24,7 +24,7 @@ import { AuthProvider, useAuth } from '@/lib/auth-context';
 import "./app.css";
 
 const theme = createTheme({
-  primaryColor: 'orange',
+  primaryColor: 'blue',
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   defaultRadius: 'md',
 });

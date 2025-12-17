@@ -25,6 +25,9 @@ export function RecipeForm({
       prep_time: initialValues?.prep_time,
       cook_time: initialValues?.cook_time,
       servings: initialValues?.servings,
+      notes: initialValues?.notes || '',
+      image_url: initialValues?.image_url || '',
+      instructions: initialValues?.instructions || '',
       ingredients: initialValues?.ingredients?.length 
         ? initialValues.ingredients 
         : [{ name: '', amount: undefined, unit: '' }],
@@ -139,10 +142,10 @@ export function RecipeForm({
           </Stack>
         </Paper>
 
-        {/* Instructions */}
+        {/* Steps */}
         <Paper shadow="xs" p="md" withBorder>
           <Group justify="space-between" mb="md">
-            <Title order={3}>Instructions</Title>
+            <Title order={3}>Steps</Title>
             <Button
               leftSection={<IconPlus size={16} />}
               variant="light"
@@ -176,6 +179,35 @@ export function RecipeForm({
               </Group>
             ))}
           </Stack>
+        </Paper>
+
+        {/* Notes */}
+        <Paper shadow="xs" p="md" withBorder>
+          <Textarea
+            label="Notes"
+            placeholder="Additional notes about the recipe"
+            minRows={3}
+            {...form.getInputProps('notes')}
+          />
+        </Paper>
+
+        {/* Image URL */}
+        <Paper shadow="xs" p="md" withBorder>
+          <TextInput
+            label="Image URL"
+            placeholder="https://example.com/image.jpg"
+            {...form.getInputProps('image_url')}
+          />
+        </Paper>
+
+        {/* Instructions */}
+        <Paper shadow="xs" p="md" withBorder>
+          <Textarea
+            label="Instructions"
+            placeholder="Step-by-step instructions for the recipe"
+            minRows={3}
+            {...form.getInputProps('instructions')}
+          />
         </Paper>
 
         {/* Tags */}
@@ -219,6 +251,9 @@ export function recipeToFormValues(recipe: Recipe): CreateRecipeInput {
     prep_time: recipe.prep_time,
     cook_time: recipe.cook_time,
     servings: recipe.servings,
+    notes: recipe.notes || '',
+    image_url: recipe.image_url || '',
+    instructions: recipe.instructions || '',
     ingredients: recipe.ingredients?.map(ing => ({
       name: ing.name,
       amount: ing.amount,

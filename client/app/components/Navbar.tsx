@@ -15,7 +15,7 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout }: NavbarProps)
   return (
     <Group h="100%" px="md" justify="space-between">
       <UnstyledButton component={Link} to="/">
-        <Title order={3} c="orange">Grandma's Kitchen</Title>
+        <Title order={3}>Grandma's Kitchen</Title>
       </UnstyledButton>
 
       <Group>

@@ -4,4 +4,5 @@ export default [
   index("routes/home.tsx"),
   route("recipes/:id", "routes/recipe.$id.tsx"),
   route("recipes/new", "routes/recipe.new.tsx"),
+  route("recipe/:id/edit", "routes/recipe.$id.edit.tsx"),
 ] satisfies RouteConfig;

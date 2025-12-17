@@ -18,6 +18,9 @@ export interface Recipe {
   author?: string;
   created_at: string;
   updated_at: string;
+  notes?: string;
+  image_url?: string;
+  instructions?: string;
   ingredients?: RecipeIngredient[];
   steps?: Step[];
   tags?: Tag[];
@@ -63,6 +66,9 @@ export interface CreateRecipeInput {
   prep_time?: number;
   cook_time?: number;
   servings?: number;
+  notes?: string;
+  image_url?: string;
+  instructions?: string;
   ingredients: Array<{
     name: string;
     amount?: number;

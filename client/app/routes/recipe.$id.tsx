@@ -1,8 +1,9 @@
-import { Container, Title, Text, Paper, Badge, Group, Stack, List, Divider, Button } from '@mantine/core';
+import { Container, Title, Text, Paper, Badge, Group, Stack, List, Divider, Button, Image, Grid } from '@mantine/core';
 import { Link, useLoaderData } from 'react-router';
 import type { Route } from './+types/recipe.$id';
 import { api } from '@/lib/api';
 import type { Recipe } from '@/types';
+import { useAuth } from '@/components';
 
 export async function loader({ params }: Route.LoaderArgs): Promise<{ recipe: Recipe | null }> {
   const recipe = await api.getRecipe(Number(params.id)) as Recipe | null;
@@ -18,6 +19,7 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export default function RecipeDetail() {
+  const { user } = useAuth();
   const { recipe } = useLoaderData<typeof loader>();
 
   if (!recipe) {
@@ -32,10 +34,32 @@ export default function RecipeDetail() {
   }
 
   return (
-    <Container size="md" py="xl">
+    <Container size="lg" py="xl">
       <Button component={Link} to="/" variant="subtle" mb="md">
         ← Back to recipes
       </Button>
+
+      {recipe.image_url && (
+        <Image
+          src={recipe.image_url}
+          alt={recipe.title}
+          radius="md"
+          mb="xl"
+          mah={400}
+          fit="cover"
+        />
+      )}
+
+      {user && user.username === recipe.author && (
+        <Button 
+          component={Link}
+          to={`/recipe/${recipe.id}/edit`}
+          variant="outline"
+          mb="md"
+        >
+          Edit Recipe
+        </Button>
+      )}
 
       <Title order={1} mb="sm">{recipe.title}</Title>
       
@@ -47,17 +71,17 @@ export default function RecipeDetail() {
 
       <Group gap="xs" mb="xl">
         {recipe.prep_time && (
-          <Badge size="lg" color="blue" variant="light">
+          <Badge size="lg" variant="light">
             Prep: {recipe.prep_time} min
           </Badge>
         )}
         {recipe.cook_time && (
-          <Badge size="lg" color="orange" variant="light">
+          <Badge size="lg" variant="light">
             Cook: {recipe.cook_time} min
           </Badge>
         )}
         {recipe.servings && (
-          <Badge size="lg" color="green" variant="light">
+          <Badge size="lg" variant="light">
             Serves {recipe.servings}
           </Badge>
         )}
@@ -73,35 +97,57 @@ export default function RecipeDetail() {
         </Group>
       )}
 
-      <Stack gap="xl">
-        <Paper shadow="xs" p="md" withBorder>
-          <Title order={2} size="h3" mb="md">Ingredients</Title>
-          <List spacing="sm">
-            {recipe.ingredients?.map((ingredient) => (
-              <List.Item key={ingredient.id}>
-                {ingredient.amount && ingredient.unit ? (
-                  <Text>
-                    <strong>{ingredient.amount} {ingredient.unit}</strong> {ingredient.name}
-                  </Text>
-                ) : (
-                  <Text>{ingredient.name}</Text>
-                )}
-              </List.Item>
-            ))}
-          </List>
-        </Paper>
+      <Grid gutter="xl">
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          <Stack gap="xl">
+            <Paper shadow="xs" p="md" withBorder>
+              <Title order={2} size="h3" mb="md">Ingredients</Title>
+              <List spacing="sm">
+                {recipe.ingredients?.map((ingredient) => (
+                  <List.Item key={ingredient.id}>
+                    {ingredient.amount && ingredient.unit ? (
+                      <Text>
+                        <strong>{ingredient.amount} {ingredient.unit}</strong> {ingredient.name}
+                      </Text>
+                    ) : (
+                      <Text>{ingredient.name}</Text>
+                    )}
+                  </List.Item>
+                ))}
+              </List>
+            </Paper>
 
-        <Paper shadow="xs" p="md" withBorder>
-          <Title order={2} size="h3" mb="md">Instructions</Title>
-          <List spacing="md" type="ordered">
-            {recipe.steps?.map((step) => (
-              <List.Item key={step.id}>
-                <Text>{step.instruction}</Text>
-              </List.Item>
-            ))}
-          </List>
-        </Paper>
-      </Stack>
+            <Paper shadow="xs" p="md" withBorder>
+              <Title order={2} size="h3" mb="md">Steps</Title>
+              <List spacing="md" type="ordered">
+                {recipe.steps?.map((step) => (
+                  <List.Item key={step.id}>
+                    <Text>{step.instruction}</Text>
+                  </List.Item>
+                ))}
+              </List>
+            </Paper>
+          </Stack>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Stack gap="xl">
+            {recipe.notes && (
+              <Paper shadow="xs" p="md" withBorder bg="orange.0">
+                <Title order={3} size="h4" mb="sm">Notes</Title>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.notes}</Text>
+              </Paper>
+            )}
+
+            {recipe.instructions && (
+              <Paper shadow="xs" p="md" withBorder bg="blue.0">
+                <Title order={3} size="h4" mb="sm">Instructions</Title>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</Text>
+              </Paper>
+            )}
+          </Stack>
+        </Grid.Col>
+      </Grid>
 
       {recipe.author && (
         <>

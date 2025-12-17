@@ -84,7 +84,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create new recipe
 router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const { title, description, prep_time, cook_time, servings, ingredients, steps, tags } = req.body;
+    const { title, description, prep_time, cook_time, servings, ingredients, steps, tags, notes, image_url, instructions } = req.body;
     const created_by = req.user?.userId;
     
     if (!title) {
@@ -97,10 +97,10 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     
     // Create recipe
     const recipeResult = await query(
-      `INSERT INTO recipes (title, description, prep_time, cook_time, servings, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO recipes (title, description, prep_time, cook_time, servings, created_by, notes, image_url, instructions)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [title, description, prep_time, cook_time, servings, created_by]
+      [title, description, prep_time, cook_time, servings, created_by, notes, image_url, instructions]
     );
     
     const recipeId = recipeResult.rows[0].id;
@@ -179,7 +179,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 router.put('/:id', authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, prep_time, cook_time, servings, ingredients, steps, tags } = req.body;
+    const { title, description, prep_time, cook_time, servings, ingredients, steps, tags, notes, image_url, instructions } = req.body;
     
     // Check if user owns the recipe or is admin
     const ownerCheck = await query('SELECT created_by FROM recipes WHERE id = $1', [id]);
@@ -202,10 +202,13 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
            description = COALESCE($2, description),
            prep_time = COALESCE($3, prep_time),
            cook_time = COALESCE($4, cook_time),
-           servings = COALESCE($5, servings)
-       WHERE id = $6
+           servings = COALESCE($5, servings),
+           notes = COALESCE($6, notes),
+           image_url = COALESCE($7, image_url),
+           instructions = COALESCE($8, instructions)
+       WHERE id = $9
        RETURNING *`,
-      [title, description, prep_time, cook_time, servings, id]
+      [title, description, prep_time, cook_time, servings, notes, image_url, instructions, id]
     );
     
     // Update ingredients if provided
