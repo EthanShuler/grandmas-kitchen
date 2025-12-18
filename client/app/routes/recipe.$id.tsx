@@ -3,7 +3,7 @@ import { Link, useLoaderData } from 'react-router';
 import type { Route } from './+types/recipe.$id';
 import { api } from '@/lib/api';
 import type { Recipe } from '@/types';
-import { useAuth } from '@/components';
+import { useAuth, FavoriteButton } from '@/components';
 
 export async function loader({ params }: Route.LoaderArgs): Promise<{ recipe: Recipe | null }> {
   const recipe = await api.getRecipe(Number(params.id)) as Recipe | null;
@@ -50,16 +50,18 @@ export default function RecipeDetail() {
         />
       )}
 
-      {user && user.username === recipe.author && (
-        <Button
-          component={Link}
-          to={`/recipe/${recipe.id}/edit`}
-          variant="outline"
-          mb="md"
-        >
-          Edit Recipe
-        </Button>
-      )}
+      <Group justify="space-between" mb="md">
+        {user && user.username === recipe.author && (
+          <Button
+            component={Link}
+            to={`/recipe/${recipe.id}/edit`}
+            variant="outline"
+          >
+            Edit Recipe
+          </Button>
+        )}
+        <FavoriteButton recipeId={recipe.id} size="lg" variant="light" />
+      </Group>
 
       <Title order={1} mb="sm">{recipe.title}</Title>
 

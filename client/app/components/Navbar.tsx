@@ -1,6 +1,6 @@
 import { Stack, Button, Avatar, Text, TextInput, NavLink, Divider, Group, Box } from '@mantine/core';
 import { Link, useNavigate } from 'react-router';
-import { IconSearch, IconLogout, IconUser, IconHome, IconPlus } from '@tabler/icons-react';
+import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart } from '@tabler/icons-react';
 import { useAuth } from '@/components';
 import { useState } from 'react';
 
@@ -46,13 +46,22 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout, onClose }: Nav
         />
         
         {isAuthenticated && (
-          <NavLink
-            component={Link}
-            to="/recipes/new"
-            label="Add Recipe"
-            leftSection={<IconPlus size={18} />}
-            onClick={onClose}
-          />
+          <>
+            <NavLink
+              component={Link}
+              to="/favorites"
+              label="Favorites"
+              leftSection={<IconHeart size={18} />}
+              onClick={onClose}
+            />
+            <NavLink
+              component={Link}
+              to="/recipes/new"
+              label="Add Recipe"
+              leftSection={<IconPlus size={18} />}
+              onClick={onClose}
+            />
+          </>
         )}
       </Stack>
 

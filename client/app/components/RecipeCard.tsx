@@ -1,6 +1,7 @@
 import { Card, Text, Badge, Group, Image } from '@mantine/core';
 import { Link } from 'react-router';
 import type { Recipe } from '@/types';
+import { FavoriteButton } from './FavoriteButton';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -22,7 +23,8 @@ export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
       )}
       
       <Group justify="space-between" mb="xs" mt="md">
-        <Text fw={500} size="lg" lineClamp={1}>{recipe.title}</Text>
+        <Text fw={500} size="lg" lineClamp={1} style={{ flex: 1 }}>{recipe.title}</Text>
+        <FavoriteButton recipeId={recipe.id} size="sm" />
       </Group>
 
       {recipe.description && (

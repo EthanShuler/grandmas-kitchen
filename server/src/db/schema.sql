@@ -68,6 +68,14 @@ CREATE TABLE IF NOT EXISTS recipe_tags (
     PRIMARY KEY (recipe_id, tag_id)
 );
 
+-- Favorites table
+CREATE TABLE IF NOT EXISTS favorites (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, recipe_id)
+);
+
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_recipes_created_by ON recipes(created_by);
 CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id);
@@ -75,6 +83,8 @@ CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_ingredient_id ON recipe_ingred
 CREATE INDEX IF NOT EXISTS idx_steps_recipe_id ON steps(recipe_id);
 CREATE INDEX IF NOT EXISTS idx_recipe_tags_recipe_id ON recipe_tags(recipe_id);
 CREATE INDEX IF NOT EXISTS idx_recipe_tags_tag_id ON recipe_tags(tag_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_recipe_id ON favorites(recipe_id);
 
 -- Trigger to update updated_at on recipes
 CREATE OR REPLACE FUNCTION update_updated_at_column()

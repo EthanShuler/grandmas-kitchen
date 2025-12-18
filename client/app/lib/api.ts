@@ -101,6 +101,27 @@ class ApiClient {
   async getRecipesByTag(tagId: number) {
     return this.request(`/tags/${tagId}/recipes`);
   }
+
+  // Favorites
+  async getFavorites() {
+    return this.request('/favorites');
+  }
+
+  async addFavorite(recipeId: number) {
+    return this.request(`/favorites/${recipeId}`, {
+      method: 'POST',
+    });
+  }
+
+  async removeFavorite(recipeId: number) {
+    return this.request(`/favorites/${recipeId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async checkFavorite(recipeId: number) {
+    return this.request(`/favorites/check/${recipeId}`);
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);
