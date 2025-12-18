@@ -59,8 +59,9 @@ class ApiClient {
   }
 
   // Recipes
-  async getRecipes() {
-    return this.request('/recipes');
+  async getRecipes(search?: string) {
+    const params = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.request(`/recipes${params}`);
   }
 
   async getRecipe(id: number) {

@@ -4,15 +4,37 @@ import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-// GET all recipes
+// GET all recipes (with optional search)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const result = await query(
-      `SELECT r.*, u.username as author
-       FROM recipes r
-       LEFT JOIN users u ON r.created_by = u.id
-       ORDER BY r.created_at DESC`
-    );
+    const { search } = req.query;
+    
+    let sql = `
+      SELECT DISTINCT r.*, u.username as author
+      FROM recipes r
+      LEFT JOIN users u ON r.created_by = u.id
+    `;
+    const params: string[] = [];
+    
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchTerm = `%${search.trim().toLowerCase()}%`;
+      sql += `
+        LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+        LEFT JOIN ingredients i ON ri.ingredient_id = i.id
+        LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id
+        LEFT JOIN tags t ON rt.tag_id = t.id
+        WHERE LOWER(r.title) LIKE $1
+           OR LOWER(r.description) LIKE $1
+           OR LOWER(COALESCE(r.source, '')) LIKE $1
+           OR LOWER(i.name) LIKE $1
+           OR LOWER(t.name) LIKE $1
+      `;
+      params.push(searchTerm);
+    }
+    
+    sql += ` ORDER BY r.created_at DESC`;
+    
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching recipes:', error);
