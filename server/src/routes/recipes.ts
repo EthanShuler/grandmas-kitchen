@@ -35,6 +35,33 @@ router.get('/', async (req: Request, res: Response) => {
     sql += ` ORDER BY r.created_at DESC`;
     
     const result = await query(sql, params);
+    
+    // Fetch tags for all recipes
+    const recipeIds = result.rows.map((r: any) => r.id);
+    if (recipeIds.length > 0) {
+      const tagsResult = await query(
+        `SELECT rt.recipe_id, t.id, t.name
+         FROM recipe_tags rt
+         JOIN tags t ON rt.tag_id = t.id
+         WHERE rt.recipe_id = ANY($1)`,
+        [recipeIds]
+      );
+      
+      // Group tags by recipe_id
+      const tagsByRecipe: Record<number, any[]> = {};
+      for (const tag of tagsResult.rows) {
+        if (!tagsByRecipe[tag.recipe_id]) {
+          tagsByRecipe[tag.recipe_id] = [];
+        }
+        tagsByRecipe[tag.recipe_id].push({ id: tag.id, name: tag.name });
+      }
+      
+      // Attach tags to recipes
+      for (const recipe of result.rows) {
+        recipe.tags = tagsByRecipe[recipe.id] || [];
+      }
+    }
+    
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching recipes:', error);
