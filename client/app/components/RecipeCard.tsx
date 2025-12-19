@@ -1,5 +1,5 @@
 import { Card, Text, Badge, Group, Image } from '@mantine/core';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { Recipe } from '@/types';
 import { FavoriteButton } from './FavoriteButton';
 
@@ -9,6 +9,8 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
+  const navigate = useNavigate();
+
   const cardContent = (
     <>
       {recipe.image_url && (
@@ -73,12 +75,14 @@ export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
       {recipe.author && (
         <Text size="xs" c="dimmed" mt="sm">
           By <Text 
-            component={Link} 
-            to={`/profiles/${recipe.author}`}
             span
             c="blue"
             style={{ cursor: 'pointer', textDecoration: 'none' }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(`/profiles/${recipe.author}`);
+            }}
           >
             {recipe.author}
           </Text>
