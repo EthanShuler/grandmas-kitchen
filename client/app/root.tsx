@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
 import { 
   MantineProvider, 
@@ -18,6 +19,7 @@ import {
   Title,
   Group
 } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { api } from '@/lib/api';
@@ -115,6 +117,7 @@ export default function App() {
 
   return (
     <MantineProvider theme={theme} forceColorScheme="light">
+      <Notifications />
       <AuthProvider>
         <AppContent
           onLoginClick={openLogin}

@@ -102,6 +102,11 @@ class ApiClient {
     return this.request(`/tags/${tagId}/recipes`);
   }
 
+  // Users
+  async getUserRecipes(userId: number) {
+    return this.request(`/users/${userId}/recipes`);
+  }
+
   // Favorites
   async getFavorites() {
     return this.request('/favorites');

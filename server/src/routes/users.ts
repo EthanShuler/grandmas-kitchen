@@ -39,6 +39,51 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+// GET user's recipes
+router.get('/:id/recipes', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await query(
+      `SELECT DISTINCT r.*, u.username as author
+       FROM recipes r
+       LEFT JOIN users u ON r.created_by = u.id
+       WHERE r.created_by = $1
+       ORDER BY r.created_at DESC`,
+      [id]
+    );
+    
+    // Fetch tags for all recipes
+    const recipeIds = result.rows.map((r: any) => r.id);
+    if (recipeIds.length > 0) {
+      const tagsResult = await query(
+        `SELECT rt.recipe_id, t.id, t.name
+         FROM recipe_tags rt
+         JOIN tags t ON rt.tag_id = t.id
+         WHERE rt.recipe_id = ANY($1)`,
+        [recipeIds]
+      );
+      
+      const tagsByRecipe: Record<number, any[]> = {};
+      for (const tag of tagsResult.rows) {
+        if (!tagsByRecipe[tag.recipe_id]) {
+          tagsByRecipe[tag.recipe_id] = [];
+        }
+        tagsByRecipe[tag.recipe_id].push({ id: tag.id, name: tag.name });
+      }
+      
+      for (const recipe of result.rows) {
+        recipe.tags = tagsByRecipe[recipe.id] || [];
+      }
+    }
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching user recipes:', error);
+    res.status(500).json({ error: 'Failed to fetch user recipes' });
+  }
+});
+
 // POST create new user (registration)
 router.post('/', async (req: Request, res: Response) => {
   try {

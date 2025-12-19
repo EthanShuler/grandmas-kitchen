@@ -1,5 +1,6 @@
 import { Container, Title, Text, Paper, Badge, Group, Stack, List, Divider, Button, Image, Grid } from '@mantine/core';
-import { Link, useLoaderData } from 'react-router';
+import { notifications } from '@mantine/notifications';
+import { Link, useLoaderData, useNavigate } from 'react-router';
 import type { Route } from './+types/recipe.$id';
 import { api } from '@/lib/api';
 import type { Recipe } from '@/types';
@@ -21,6 +22,7 @@ export function meta({ data }: Route.MetaArgs) {
 export default function RecipeDetail() {
   const { user } = useAuth();
   const { recipe } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   if (!recipe) {
     return (
@@ -52,13 +54,44 @@ export default function RecipeDetail() {
 
       <Group justify="space-between" mb="md">
         {user && user.username === recipe.author && (
-          <Button
-            component={Link}
-            to={`/recipe/${recipe.id}/edit`}
-            variant="outline"
-          >
-            Edit Recipe
-          </Button>
+          <Group>
+            <Button
+              component={Link}
+              to={`/recipe/${recipe.id}/edit`}
+              variant="outline"
+            >
+              Edit Recipe
+            </Button>
+            <Button
+              variant="outline"
+              color="red"
+              onClick={async () => {
+                if (confirm('Are you sure you want to delete this recipe?')) {
+                  try {
+                    await api.deleteRecipe(recipe.id);
+                    notifications.show({
+                      title: 'Success',
+                      message: 'Recipe deleted successfully.',
+                      color: 'green',
+                    });
+                    // Delay navigation slightly to allow notification to show
+                    setTimeout(() => {
+                      navigate('/');
+                    }, 500);
+                  } catch (error) {
+                    console.error('Error deleting recipe:', error);
+                    notifications.show({
+                      title: 'Error',
+                      message: 'Failed to delete recipe.',
+                      color: 'red',
+                    });
+                  }
+                }
+              }}
+            >
+              Delete Recipe
+            </Button>
+          </Group>
         )}
         <FavoriteButton recipeId={recipe.id} size="lg" variant="light" />
       </Group>

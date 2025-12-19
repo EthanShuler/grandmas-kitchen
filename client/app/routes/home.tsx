@@ -1,15 +1,34 @@
-import { Container, Title, Text, Card, SimpleGrid, Group, Button, Badge, CloseButton } from '@mantine/core';
+import { Container, Title, Text, Card, SimpleGrid, Group, Button, Badge, CloseButton, MultiSelect } from '@mantine/core';
 import { Link, useLoaderData, useSearchParams } from 'react-router';
 import type { Route } from './+types/home';
 import { api } from '@/lib/api';
-import type { Recipe } from '@/types';
+import type { Recipe, Tag } from '@/types';
 import { RecipeCard, useAuth } from '@/components';
 
-export async function loader({ request }: Route.LoaderArgs): Promise<{ recipes: Recipe[], search: string | null }> {
+interface LoaderData {
+  recipes: Recipe[];
+  allTags: Tag[];
+  search: string | null;
+  selectedTags: string[];
+}
+
+export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData> {
   const url = new URL(request.url);
   const search = url.searchParams.get('search');
-  const recipes = await api.getRecipes(search || undefined);
-  return { recipes: Array.isArray(recipes) ? recipes : [], search };
+  const tagParam = url.searchParams.get('tags');
+  const selectedTags = tagParam ? tagParam.split(',') : [];
+  
+  const [recipes, allTags] = await Promise.all([
+    api.getRecipes(search || undefined),
+    api.getTags()
+  ]);
+  
+  return { 
+    recipes: Array.isArray(recipes) ? recipes : [], 
+    allTags: Array.isArray(allTags) ? allTags : [],
+    search,
+    selectedTags
+  };
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -20,13 +39,30 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { recipes, search } = useLoaderData<typeof loader>();
+  const { recipes, allTags, search, selectedTags } = useLoaderData<typeof loader>();
   const { isAuthenticated } = useAuth();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const clearSearch = () => {
     setSearchParams({});
   };
+
+  const handleTagChange = (tags: string[]) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (tags.length > 0) {
+      newParams.set('tags', tags.join(','));
+    } else {
+      newParams.delete('tags');
+    }
+    setSearchParams(newParams);
+  };
+
+  // Filter recipes by selected tags
+  const filteredRecipes = selectedTags.length > 0
+    ? recipes.filter(recipe => 
+        recipe.tags && recipe.tags.some(tag => selectedTags.includes(tag.name))
+      )
+    : recipes;
 
   return (
     <Container size="xl" py="md">
@@ -52,12 +88,23 @@ export default function Home() {
           >
             {search}
           </Badge>
-          <Text size="sm" c="dimmed">({recipes.length} result{recipes.length !== 1 ? 's' : ''})</Text>
+          <Text size="sm" c="dimmed">({filteredRecipes.length} result{filteredRecipes.length !== 1 ? 's' : ''})</Text>
         </Group>
       )}
 
+      <MultiSelect
+        label="Filter by tags"
+        placeholder="Select tags to filter"
+        data={allTags.map(tag => ({ value: tag.name, label: tag.name }))}
+        value={selectedTags}
+        onChange={handleTagChange}
+        mb="lg"
+        clearable
+        searchable
+      />
+
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
-        {recipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
           <RecipeCard 
             key={recipe.id} 
             recipe={recipe} 
@@ -66,10 +113,12 @@ export default function Home() {
         ))}
       </SimpleGrid>
 
-      {recipes.length === 0 && (
+      {filteredRecipes.length === 0 && (
         <Card shadow="sm" padding="xl" radius="md" withBorder>
           <Text ta="center" c="dimmed">
-            {search 
+            {selectedTags.length > 0
+              ? `No recipes found with the selected tags.`
+              : search 
               ? `No recipes found matching "${search}". Try a different search term.`
               : 'No recipes yet. Be the first to add one!'
             }

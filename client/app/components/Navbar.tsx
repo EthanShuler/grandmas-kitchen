@@ -81,8 +81,11 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout, onClose }: Nav
               <Text size="sm" fw={500}>{user.username}</Text>
             </Group>
             <NavLink
+              component={Link}
+              to="/profile"
               label="Profile"
               leftSection={<IconUser size={18} />}
+              onClick={onClose}
             />
             <NavLink
               label="Logout"
