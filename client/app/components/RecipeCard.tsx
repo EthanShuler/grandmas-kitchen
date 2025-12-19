@@ -72,7 +72,16 @@ export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
 
       {recipe.author && (
         <Text size="xs" c="dimmed" mt="sm">
-          By {recipe.author}
+          By <Text 
+            component={Link} 
+            to={`/profiles/${recipe.author}`}
+            span
+            c="blue"
+            style={{ cursor: 'pointer', textDecoration: 'none' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {recipe.author}
+          </Text>
         </Text>
       )}
     </>

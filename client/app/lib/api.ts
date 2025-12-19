@@ -88,6 +88,15 @@ class ApiClient {
     });
   }
 
+  // Users
+  async getUser(id: number) {
+    return this.request(`/users/${id}`);
+  }
+
+  async getUserByUsername(username: string) {
+    return this.request(`/users/username/${username}`);
+}
+
   // Ingredients
   async getIngredients() {
     return this.request('/ingredients');

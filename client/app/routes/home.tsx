@@ -69,7 +69,7 @@ export default function Home() {
       <Group justify="space-between" mb="xl">
         <div>
           <Title order={2} mb="xs">Family Recipes</Title>
-          <Text c="dimmed">Passed down through generations</Text>
+          <Text c="dimmed">Roggensacks and Brostroms</Text>
         </div>
         {isAuthenticated && (
           <Button component={Link} to="/recipes/new" size="md">

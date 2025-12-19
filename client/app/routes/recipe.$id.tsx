@@ -189,7 +189,15 @@ export default function RecipeDetail() {
         <>
           <Divider my="xl" />
           <Text size="sm" c="dimmed">
-            Recipe by {recipe.author}
+            Recipe by <Text 
+              component={Link} 
+              to={`/profiles/${recipe.author}`}
+              span
+              c="blue"
+              style={{ cursor: 'pointer', textDecoration: 'none' }}
+            >
+              {recipe.author}
+            </Text>
           </Text>
         </>
       )}
