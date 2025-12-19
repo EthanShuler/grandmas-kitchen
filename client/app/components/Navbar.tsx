@@ -1,6 +1,6 @@
 import { Stack, Button, Avatar, Text, TextInput, NavLink, Divider, Group, Box } from '@mantine/core';
 import { Link, useNavigate } from 'react-router';
-import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart } from '@tabler/icons-react';
+import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart, IconInfoCircle } from '@tabler/icons-react';
 import { useAuth } from '@/components';
 import { useState } from 'react';
 
@@ -66,6 +66,14 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout, onClose }: Nav
       </Stack>
 
       <Box>
+        <NavLink
+          component={Link}
+          to="/about"
+          label="About"
+          leftSection={<IconInfoCircle size={18} />}
+          onClick={onClose}
+          mb="md"
+        />
         <Divider mb="md" />
         {user ? (
           <Stack gap="xs">
