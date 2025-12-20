@@ -72,7 +72,7 @@ sudo -u postgres psql
 
 # In PostgreSQL prompt:
 CREATE DATABASE grandmas_kitchen;
-CREATE USER kitchen_user WITH PASSWORD '0Vj2m49bst6O';
+CREATE USER kitchen_user WITH PASSWORD 'PASS';
 GRANT ALL PRIVILEGES ON DATABASE grandmas_kitchen TO kitchen_user;
 \q
 ```
@@ -85,6 +85,15 @@ sudo npm install -g pm2
 ### Install Nginx
 ```bash
 sudo apt install -y nginx
+```
+
+### Setup Swap (for building)
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
 ## Step 4: Deploy Application
@@ -122,8 +131,8 @@ nano server/.env
 Add:
 ```env
 PORT=3001
-DATABASE_URL=postgresql://kitchen_user:0Vj2m49bst6O@localhost:5432/grandmas_kitchen
-JWT_SECRET=CmyIXm0dSVPXViBW22amIXDLwktjIxM54da37XL0gfH
+DATABASE_URL=postgresql://kitchen_user:PASS@localhost:5432/grandmas_kitchen
+JWT_SECRET=SECRET
 NODE_ENV=production
 ```
 
@@ -134,7 +143,7 @@ nano client/.env
 
 Add:
 ```env
-VITE_API_URL=http://your-lightsail-ip:3001/api
+VITE_API_URL=http://52.41.14.144:3001/api
 ```
 
 ### Initialize Database
