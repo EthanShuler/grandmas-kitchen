@@ -15,4 +15,4 @@
 /.react-router/
 /build/
 
-.deploy-strategy-aws-lightsail.md
+/instructions/
