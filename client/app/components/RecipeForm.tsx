@@ -1,6 +1,11 @@
 import { TextInput, Textarea, NumberInput, Button, Paper, Stack, Group, ActionIcon, Text, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { RichTextEditor, Link as TipTapLink } from '@mantine/tiptap';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Link as LinkExtension } from '@tiptap/extension-link';
+import { useEffect } from 'react';
 import type { CreateRecipeInput, Recipe } from '@/types';
 
 interface RecipeFormProps {
@@ -29,6 +34,7 @@ export function RecipeForm({
       notes: initialValues?.notes || '',
       image_url: initialValues?.image_url || '',
       instructions: initialValues?.instructions || '',
+      markdown_content: initialValues?.markdown_content || '',
       ingredients: initialValues?.ingredients?.length 
         ? initialValues.ingredients 
         : [{ name: '', amount: undefined, unit: '' }],
@@ -42,10 +48,30 @@ export function RecipeForm({
     },
   });
 
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      LinkExtension.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: initialValues?.markdown_content || '',
+    onUpdate: ({ editor }) => {
+      form.setFieldValue('markdown_content', editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (editor && initialValues?.markdown_content) {
+      editor.commands.setContent(initialValues.markdown_content);
+    }
+  }, [editor, initialValues?.markdown_content]);
+
   const handleSubmit = async (values: CreateRecipeInput) => {
     // Filter out empty ingredients and steps
     const cleanedValues = {
       ...values,
+      markdown_content: editor?.getHTML() || '',
       ingredients: values.ingredients.filter(ing => ing.name.trim() !== ''),
       steps: values.steps.filter(step => step.trim() !== ''),
     };
@@ -217,6 +243,42 @@ export function RecipeForm({
           />
         </Paper>
 
+        {/* Markdown Content */}
+        <Paper shadow="xs" p="md" withBorder>
+          <Text fw={500} size="sm" mb="xs">Recipe Story (Optional)</Text>
+          <Text size="xs" c="dimmed" mb="sm">Add detailed recipe story, tips, or variations with rich text formatting</Text>
+          <RichTextEditor editor={editor}>
+            <RichTextEditor.Toolbar sticky stickyOffset={60}>
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Bold />
+                <RichTextEditor.Italic />
+                <RichTextEditor.Strikethrough />
+                <RichTextEditor.ClearFormatting />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.H1 />
+                <RichTextEditor.H2 />
+                <RichTextEditor.H3 />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Blockquote />
+                <RichTextEditor.Hr />
+                <RichTextEditor.BulletList />
+                <RichTextEditor.OrderedList />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Link />
+                <RichTextEditor.Unlink />
+              </RichTextEditor.ControlsGroup>
+            </RichTextEditor.Toolbar>
+
+            <RichTextEditor.Content />
+          </RichTextEditor>
+        </Paper>
+
         {/* Tags */}
         <Paper shadow="xs" p="md" withBorder>
           <TextInput
@@ -262,6 +324,7 @@ export function recipeToFormValues(recipe: Recipe): CreateRecipeInput {
     notes: recipe.notes || '',
     image_url: recipe.image_url || '',
     instructions: recipe.instructions || '',
+    markdown_content: recipe.markdown_content || '',
     ingredients: recipe.ingredients?.map(ing => ({
       name: ing.name,
       amount: ing.amount,

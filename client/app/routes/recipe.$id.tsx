@@ -165,6 +165,19 @@ export default function RecipeDetail() {
                 <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</Text>
               </Paper>
             )}
+
+            {recipe.markdown_content && (
+              <Paper shadow="xs" p="md" withBorder>
+                <Title order={3} size="h4" mb="sm">Recipe Story</Title>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: recipe.markdown_content }}
+                  style={{ 
+                    lineHeight: '1.6',
+                  }}
+                  className="tiptap-content"
+                />
+              </Paper>
+            )}
           </Stack>
         </Grid.Col>
 

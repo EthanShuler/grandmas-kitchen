@@ -27,5 +27,14 @@
     "build:server": "npm run build --workspace=server",
     "start:server": "npm run start --workspace=server",
     "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.3.10",
+    "@mantine/hooks": "^8.3.10",
+    "@mantine/tiptap": "^8.3.10",
+    "@tiptap/extension-link": "^3.14.0",
+    "@tiptap/pm": "^3.14.0",
+    "@tiptap/react": "^3.14.0",
+    "@tiptap/starter-kit": "^3.14.0"
   }
 }

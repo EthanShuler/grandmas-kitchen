@@ -22,6 +22,7 @@ export interface Recipe {
   notes?: string;
   image_url?: string;
   instructions?: string;
+  markdown_content?: string;
   ingredients?: RecipeIngredient[];
   steps?: Step[];
   tags?: Tag[];
@@ -71,6 +72,7 @@ export interface CreateRecipeInput {
   notes?: string;
   image_url?: string;
   instructions?: string;
+  markdown_content?: string;
   ingredients: Array<{
     name: string;
     amount?: number;

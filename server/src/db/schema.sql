@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     notes TEXT,
     image_url VARCHAR(500),
     instructions TEXT,
+    markdown_content TEXT,
     prep_time INTEGER, -- in minutes
     cook_time INTEGER, -- in minutes
     servings INTEGER,

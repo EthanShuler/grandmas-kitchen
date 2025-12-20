@@ -133,7 +133,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create new recipe
 router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const { title, description, prep_time, cook_time, servings, source, ingredients, steps, tags, notes, image_url, instructions } = req.body;
+    const { title, description, prep_time, cook_time, servings, source, ingredients, steps, tags, notes, image_url, instructions, markdown_content } = req.body;
     const created_by = req.user?.userId;
     
     if (!title) {
@@ -146,10 +146,10 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     
     // Create recipe
     const recipeResult = await query(
-      `INSERT INTO recipes (title, description, prep_time, cook_time, servings, source, created_by, notes, image_url, instructions)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO recipes (title, description, prep_time, cook_time, servings, source, created_by, notes, image_url, instructions, markdown_content)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
-      [title, description, prep_time, cook_time, servings, source, created_by, notes, image_url, instructions]
+      [title, description, prep_time, cook_time, servings, source, created_by, notes, image_url, instructions, markdown_content]
     );
     
     const recipeId = recipeResult.rows[0].id;
@@ -228,7 +228,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 router.put('/:id', authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, prep_time, cook_time, servings, source, ingredients, steps, tags, notes, image_url, instructions } = req.body;
+    const { title, description, prep_time, cook_time, servings, source, ingredients, steps, tags, notes, image_url, instructions, markdown_content } = req.body;
     
     // Check if user owns the recipe or is admin
     const ownerCheck = await query('SELECT created_by FROM recipes WHERE id = $1', [id]);
@@ -255,10 +255,11 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
            source = COALESCE($6, source),
            notes = COALESCE($7, notes),
            image_url = COALESCE($8, image_url),
-           instructions = COALESCE($9, instructions)
-       WHERE id = $10
+           instructions = COALESCE($9, instructions),
+           markdown_content = COALESCE($10, markdown_content)
+       WHERE id = $11
        RETURNING *`,
-      [title, description, prep_time, cook_time, servings, source, notes, image_url, instructions, id]
+      [title, description, prep_time, cook_time, servings, source, notes, image_url, instructions, markdown_content, id]
     );
     
     // Update ingredients if provided
