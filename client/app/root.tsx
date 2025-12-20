@@ -77,10 +77,14 @@ export default function App() {
     setError(null);
     try {
       const response = await api.login(values.email, values.password) as { token: string; user: User };
-      localStorage.setItem('token', response.token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
+      }
       closeLogin();
       // Reload the page to trigger auth context to load the user
-      window.location.reload();
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to login');
     } finally {
@@ -93,10 +97,14 @@ export default function App() {
     setError(null);
     try {
       const response = await api.register(values.username, values.email, values.password) as { token: string; user: User };
-      localStorage.setItem('token', response.token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', response.token);
+      }
       closeRegister();
       // Reload the page to trigger auth context to load the user
-      window.location.reload();
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to register');
     } finally {

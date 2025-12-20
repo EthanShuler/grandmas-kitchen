@@ -72,7 +72,7 @@ sudo -u postgres psql
 
 # In PostgreSQL prompt:
 CREATE DATABASE grandmas_kitchen;
-CREATE USER kitchen_user WITH PASSWORD 'your_secure_password_here';
+CREATE USER kitchen_user WITH PASSWORD '0Vj2m49bst6O';
 GRANT ALL PRIVILEGES ON DATABASE grandmas_kitchen TO kitchen_user;
 \q
 ```
@@ -122,8 +122,8 @@ nano server/.env
 Add:
 ```env
 PORT=3001
-DATABASE_URL=postgresql://kitchen_user:your_secure_password_here@localhost:5432/grandmas_kitchen
-JWT_SECRET=your_very_long_random_secret_key_here_min_32_chars
+DATABASE_URL=postgresql://kitchen_user:0Vj2m49bst6O@localhost:5432/grandmas_kitchen
+JWT_SECRET=CmyIXm0dSVPXViBW22amIXDLwktjIxM54da37XL0gfH
 NODE_ENV=production
 ```
 

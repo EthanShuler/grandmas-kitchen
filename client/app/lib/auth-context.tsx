@@ -18,6 +18,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Only run on client-side
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
       api.getCurrentUser()
@@ -32,7 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
     setUser(null);
   };
 
