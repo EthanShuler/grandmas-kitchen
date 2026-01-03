@@ -2,7 +2,7 @@
 @token = your-jwt-token-here
 
 ### Health Check
-GET http://localhost:3001/health
+GET http://localhost:3001/api/health
 
 ### ==================== AUTH ====================
 

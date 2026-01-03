@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Use localhost for SSR (server-side), relative URL for browser (client-side)
+const API_BASE_URL = typeof window === 'undefined' 
+  ? 'http://localhost:3001/api'  // SSR: direct connection
+  : '/api';  // Browser: relative URL through Nginx
 
 class ApiClient {
   private baseUrl: string;
