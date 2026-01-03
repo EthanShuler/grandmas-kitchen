@@ -1,7 +1,8 @@
-import { Container, Title, Text, Card, SimpleGrid, Avatar, Group, Stack } from '@mantine/core';
-import { useLoaderData } from 'react-router';
+import { Container, Title, Text, Card, SimpleGrid, Avatar, Group, Stack, Button } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { useLoaderData, useNavigate } from 'react-router';
 import type { Route } from './+types/profiles.$username';
-import { RecipeCard } from '@/components';
+import { RecipeCard, useAuth } from '@/components';
 import { api } from '@/lib/api';
 import type { Recipe, User } from '@/types';
 
@@ -24,6 +25,31 @@ export function meta({ data }: Route.MetaArgs) {
 
 export default function UserProfile() {
   const { user, userRecipes } = useLoaderData<typeof loader>();
+  const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleDeleteUser = async () => {
+    if (!user || !currentUser?.is_admin) return;
+    
+    if (confirm(`Are you sure you want to delete user "${user.username}"? This will also delete all their recipes. This action cannot be undone.`)) {
+      try {
+        await api.deleteUser(user.id);
+        notifications.show({
+          title: 'Success',
+          message: 'User deleted successfully.',
+          color: 'green',
+        });
+        navigate('/');
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        notifications.show({
+          title: 'Error',
+          message: 'Failed to delete user.',
+          color: 'red',
+        });
+      }
+    }
+  };
 
   if (!user) {
     return (
@@ -40,22 +66,33 @@ export default function UserProfile() {
   return (
     <Container size="xl" py="md">
       <Card shadow="sm" padding="xl" radius="md" withBorder mb="xl">
-        <Group>
-          <Avatar 
-            src={user.avatar_url} 
-            size="xl" 
-            radius="xl"
-            color="blue"
-          >
-            {user.username.charAt(0).toUpperCase()}
-          </Avatar>
-          <Stack gap="xs">
-            <Title order={2}>{user.username}</Title>
-            <Text c="dimmed">{user.email}</Text>
-            <Text size="sm" c="dimmed">
-              Joined {new Date(user.created_at).toLocaleDateString()}
-            </Text>
-          </Stack>
+        <Group justify="space-between" align="flex-start">
+          <Group>
+            <Avatar 
+              src={user.avatar_url} 
+              size="xl" 
+              radius="xl"
+              color="blue"
+            >
+              {user.username.charAt(0).toUpperCase()}
+            </Avatar>
+            <Stack gap="xs">
+              <Title order={2}>{user.username}</Title>
+              <Text c="dimmed">{user.email}</Text>
+              <Text size="sm" c="dimmed">
+                Joined {new Date(user.created_at).toLocaleDateString()}
+              </Text>
+            </Stack>
+          </Group>
+          {currentUser?.is_admin && currentUser.id !== user.id && (
+            <Button
+              color="red"
+              variant="outline"
+              onClick={handleDeleteUser}
+            >
+              Delete User
+            </Button>
+          )}
         </Group>
       </Card>
 

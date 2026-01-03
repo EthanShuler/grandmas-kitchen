@@ -8,5 +8,6 @@ export default [
   route("recipe/:id/edit", "routes/recipe.$id.edit.tsx"),
   route("profile", "routes/profile.tsx"),
   route("profiles/:username", "routes/profiles.$username.tsx"),
+  route("admin", "routes/admin.tsx"),
   route("about", "routes/about.tsx"),
 ] satisfies RouteConfig;

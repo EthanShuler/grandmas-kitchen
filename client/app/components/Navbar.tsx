@@ -1,6 +1,6 @@
-import { Stack, Button, Avatar, Text, TextInput, NavLink, Divider, Group, Box } from '@mantine/core';
+import { Stack, Button, Avatar, Text, TextInput, NavLink, Divider, Group, Box, Badge } from '@mantine/core';
 import { Link, useNavigate } from 'react-router';
-import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart, IconInfoCircle } from '@tabler/icons-react';
+import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart, IconInfoCircle, IconShield } from '@tabler/icons-react';
 import { useAuth } from '@/components';
 import { useState } from 'react';
 
@@ -61,6 +61,15 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout, onClose }: Nav
               leftSection={<IconPlus size={18} />}
               onClick={onClose}
             />
+            {user?.is_admin && (
+              <NavLink
+                component={Link}
+                to="/admin"
+                label="Admin Panel"
+                leftSection={<IconShield size={18} />}
+                onClick={onClose}
+              />
+            )}
           </>
         )}
       </Stack>
@@ -86,7 +95,12 @@ export function Navbar({ onLoginClick, onRegisterClick, onLogout, onClose }: Nav
               >
                 {user.username.charAt(0).toUpperCase()}
               </Avatar>
-              <Text size="sm" fw={500}>{user.username}</Text>
+              <div style={{ flex: 1 }}>
+                <Text size="sm" fw={500}>{user.username}</Text>
+                {user.is_admin && (
+                  <Badge size="xs" variant="light" color="red">Admin</Badge>
+                )}
+              </div>
             </Group>
             <NavLink
               component={Link}

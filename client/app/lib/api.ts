@@ -10,28 +10,32 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private getAuthHeader(): Record<string, string> {
+  private getAuthHeader(token?: string): Record<string, string> {
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
     if (typeof window === 'undefined') {
       return {};
     }
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    const storedToken = localStorage.getItem('token');
+    return storedToken ? { Authorization: `Bearer ${storedToken}` } : {};
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit & { token?: string } = {}
   ): Promise<T> {
+    const { token, ...fetchOptions } = options;
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
       'Content-Type': 'application/json',
-      ...this.getAuthHeader(),
-      ...options.headers,
+      ...this.getAuthHeader(token),
+      ...fetchOptions.headers,
     };
 
     try {
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
       });
 
@@ -107,7 +111,17 @@ class ApiClient {
 
   async getUserByUsername(username: string) {
     return this.request(`/users/username/${username}`);
-}
+  }
+
+  async getAllUsers() {
+    return this.request('/users');
+  }
+
+  async deleteUser(userId: number) {
+    return this.request(`/users/${userId}`, {
+      method: 'DELETE',
+    });
+  }
 
   // Ingredients
   async getIngredients() {

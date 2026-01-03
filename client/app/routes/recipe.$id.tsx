@@ -54,7 +54,7 @@ export default function RecipeDetail() {
       )}
 
       <Group justify="space-between" mb="md">
-        {user && user.username === recipe.author && (
+        {user && (user.username === recipe.author || user.is_admin) && (
           <Group>
             <Button
               component={Link}
