@@ -49,7 +49,7 @@ export function RecipeForm({
     },
   });
 
-  const editor = useEditor({
+  const storyEditor = useEditor({
     extensions: [
       StarterKit,
       LinkExtension.configure({
@@ -62,17 +62,51 @@ export function RecipeForm({
     },
   });
 
+  const notesEditor = useEditor({
+    extensions: [
+      StarterKit,
+      LinkExtension.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: initialValues?.notes || '',
+    onUpdate: ({ editor }) => {
+      form.setFieldValue('notes', editor.getHTML());
+    },
+  });
+
+  const instructionsEditor = useEditor({
+    extensions: [
+      StarterKit,
+      LinkExtension.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: initialValues?.instructions || '',
+    onUpdate: ({ editor }) => {
+      form.setFieldValue('instructions', editor.getHTML());
+    },
+  });
+
   useEffect(() => {
-    if (editor && initialValues?.markdown_content) {
-      editor.commands.setContent(initialValues.markdown_content);
+    if (storyEditor && initialValues?.markdown_content) {
+      storyEditor.commands.setContent(initialValues.markdown_content);
     }
-  }, [editor, initialValues?.markdown_content]);
+    if (notesEditor && initialValues?.notes) {
+      notesEditor.commands.setContent(initialValues.notes);
+    }
+    if (instructionsEditor && initialValues?.instructions) {
+      instructionsEditor.commands.setContent(initialValues.instructions);
+    }
+  }, [storyEditor, notesEditor, instructionsEditor, initialValues]);
 
   const handleSubmit = async (values: CreateRecipeInput) => {
     // Filter out empty ingredients and steps
     const cleanedValues = {
       ...values,
-      markdown_content: editor?.getHTML() || '',
+      notes: notesEditor?.getHTML() || '',
+      instructions: instructionsEditor?.getHTML() || '',
+      markdown_content: storyEditor?.getHTML() || '',
       ingredients: values.ingredients.filter(ing => ing.name.trim() !== ''),
       steps: values.steps.filter(step => step.trim() !== ''),
     };
@@ -219,12 +253,38 @@ export function RecipeForm({
 
         {/* Notes */}
         <Paper shadow="xs" p="md" withBorder>
-          <Textarea
-            label="Notes"
-            placeholder="Additional notes about the recipe"
-            minRows={3}
-            {...form.getInputProps('notes')}
-          />
+          <Text fw={500} size="sm" mb="xs">Notes</Text>
+          <Text size="xs" c="dimmed" mb="sm">Add tips, variations, or important cooking notes</Text>
+          <RichTextEditor editor={notesEditor}>
+            <RichTextEditor.Toolbar sticky stickyOffset={60}>
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Bold />
+                <RichTextEditor.Italic />
+                <RichTextEditor.Strikethrough />
+                <RichTextEditor.ClearFormatting />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.H1 />
+                <RichTextEditor.H2 />
+                <RichTextEditor.H3 />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Blockquote />
+                <RichTextEditor.Hr />
+                <RichTextEditor.BulletList />
+                <RichTextEditor.OrderedList />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Link />
+                <RichTextEditor.Unlink />
+              </RichTextEditor.ControlsGroup>
+            </RichTextEditor.Toolbar>
+
+            <RichTextEditor.Content />
+          </RichTextEditor>
         </Paper>
 
         {/* Image URL */}
@@ -238,19 +298,45 @@ export function RecipeForm({
 
         {/* Instructions */}
         <Paper shadow="xs" p="md" withBorder>
-          <Textarea
-            label="Instructions"
-            placeholder="Step-by-step instructions for the recipe"
-            minRows={3}
-            {...form.getInputProps('instructions')}
-          />
+          <Text fw={500} size="sm" mb="xs">Instructions</Text>
+          <Text size="xs" c="dimmed" mb="sm">Detailed cooking instructions with formatting</Text>
+          <RichTextEditor editor={instructionsEditor}>
+            <RichTextEditor.Toolbar sticky stickyOffset={60}>
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Bold />
+                <RichTextEditor.Italic />
+                <RichTextEditor.Strikethrough />
+                <RichTextEditor.ClearFormatting />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.H1 />
+                <RichTextEditor.H2 />
+                <RichTextEditor.H3 />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Blockquote />
+                <RichTextEditor.Hr />
+                <RichTextEditor.BulletList />
+                <RichTextEditor.OrderedList />
+              </RichTextEditor.ControlsGroup>
+
+              <RichTextEditor.ControlsGroup>
+                <RichTextEditor.Link />
+                <RichTextEditor.Unlink />
+              </RichTextEditor.ControlsGroup>
+            </RichTextEditor.Toolbar>
+
+            <RichTextEditor.Content />
+          </RichTextEditor>
         </Paper>
 
         {/* Markdown Content */}
         <Paper shadow="xs" p="md" withBorder>
           <Text fw={500} size="sm" mb="xs">Recipe Story (Optional)</Text>
-          <Text size="xs" c="dimmed" mb="sm">Add detailed recipe story, tips, or variations with rich text formatting</Text>
-          <RichTextEditor editor={editor}>
+          <Text size="xs" c="dimmed" mb="sm">Share the history, memories, or special stories about this recipe</Text>
+          <RichTextEditor editor={storyEditor}>
             <RichTextEditor.Toolbar sticky stickyOffset={60}>
               <RichTextEditor.ControlsGroup>
                 <RichTextEditor.Bold />

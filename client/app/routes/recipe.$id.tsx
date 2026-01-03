@@ -160,14 +160,22 @@ export default function RecipeDetail() {
             {recipe.notes && (
               <Paper shadow="xs" p="md" withBorder bg="orange.0">
                 <Title order={3} size="h4" mb="sm">Notes</Title>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.notes}</Text>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: recipe.notes }}
+                  style={{ lineHeight: '1.6' }}
+                  className="tiptap-content"
+                />
               </Paper>
             )}
 
             {recipe.instructions && (
               <Paper shadow="xs" p="md" withBorder>
                 <Title order={3} size="h4" mb="sm">Instructions</Title>
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{recipe.instructions}</Text>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: recipe.instructions }}
+                  style={{ lineHeight: '1.6' }}
+                  className="tiptap-content"
+                />
               </Paper>
             )}
 
