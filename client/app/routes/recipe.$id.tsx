@@ -3,6 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { Link, useLoaderData, useNavigate } from 'react-router';
 import type { Route } from './+types/recipe.$id';
 import { api } from '@/lib/api';
+import { decimalToFraction } from '@/lib/fractions';
 import type { Recipe } from '@/types';
 import { useAuth, FavoriteButton } from '@/components';
 
@@ -142,7 +143,11 @@ export default function RecipeDetail() {
                   <List.Item key={ingredient.id}>
                     {ingredient.amount && ingredient.unit ? (
                       <Text>
-                        <strong>{ingredient.amount} {ingredient.unit}</strong> {ingredient.name}
+                        <strong>{decimalToFraction(ingredient.amount)} {ingredient.unit}</strong> {ingredient.name}
+                      </Text>
+                    ) : ingredient.amount ? (
+                      <Text>
+                        <strong>{decimalToFraction(ingredient.amount)}</strong> {ingredient.name}
                       </Text>
                     ) : (
                       <Text>{ingredient.name}</Text>

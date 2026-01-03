@@ -18,17 +18,28 @@ export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData>
   const tagParam = url.searchParams.get('tags');
   const selectedTags = tagParam ? tagParam.split(',') : [];
   
-  const [recipes, allTags] = await Promise.all([
-    api.getRecipes(search || undefined),
-    api.getTags()
-  ]);
-  
-  return { 
-    recipes: Array.isArray(recipes) ? recipes : [], 
-    allTags: Array.isArray(allTags) ? allTags : [],
-    search,
-    selectedTags
-  };
+  try {
+    const [recipes, allTags] = await Promise.all([
+      api.getRecipes(search || undefined),
+      api.getTags()
+    ]);
+    
+    return { 
+      recipes: Array.isArray(recipes) ? recipes : [], 
+      allTags: Array.isArray(allTags) ? allTags : [],
+      search,
+      selectedTags
+    };
+  } catch (error) {
+    console.error('Error loading home page data:', error);
+    // Return empty data if API fails
+    return {
+      recipes: [],
+      allTags: [],
+      search,
+      selectedTags
+    };
+  }
 }
 
 export function meta({}: Route.MetaArgs) {

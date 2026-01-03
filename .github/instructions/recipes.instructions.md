@@ -92,6 +92,9 @@ The backend is in "server" and uses:
 - Use prepared statements to prevent SQL injection
 
 ## Todo
-- Recipe photos upload - Multiple images per recipe 
-- Timer integration - Click to start cooking timers
+- Make ingredient quantity fields accept fractions
+- Add markdown support for recipe notes and instructions
 - Admin panel - Manage users, recipes, and site content 
+- Recipe photos upload - Multiple images per recipe 
+- Make ingredeints and steps reorderable via drag-and-drop
+- Profile picture upload for users

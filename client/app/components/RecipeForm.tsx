@@ -6,6 +6,7 @@ import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Link as LinkExtension } from '@tiptap/extension-link';
 import { useEffect } from 'react';
+import { fractionToDecimal } from '@/lib/fractions';
 import type { CreateRecipeInput, Recipe } from '@/types';
 
 interface RecipeFormProps {
@@ -144,13 +145,15 @@ export function RecipeForm({
           <Stack gap="sm">
             {form.values.ingredients.map((_, index) => (
               <Group key={index} align="flex-start" wrap="nowrap">
-                <NumberInput
-                  placeholder="2"
+                <TextInput
+                  placeholder="1 1/2"
                   style={{ width: 80 }}
-                  min={0}
-                  step={0.25}
-                  decimalScale={2}
-                  {...form.getInputProps(`ingredients.${index}.amount`)}
+                  onBlur={(e) => {
+                    const value = e.currentTarget.value;
+                    const decimal = fractionToDecimal(value);
+                    form.setFieldValue(`ingredients.${index}.amount`, decimal);
+                  }}
+                  defaultValue={form.values.ingredients[index].amount?.toString() || ''}
                 />
                 <TextInput
                   placeholder="cups"
