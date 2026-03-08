@@ -1,7 +1,9 @@
+import type { Recipe, User, Tag, CreateRecipeInput, AuthResponse } from '@/types';
+
 // Use localhost for SSR (server-side), relative URL for browser (client-side)
-const API_BASE_URL = typeof window === 'undefined' 
+const API_BASE_URL = typeof window === 'undefined'
   ? 'http://localhost:3001/api'  // SSR: direct connection
-  : '/api';  // Browser: relative URL through Nginx
+  : '/api';  // Browser: relative URL through Nginx/Vite proxy
 
 class ApiClient {
   private baseUrl: string;
@@ -34,10 +36,7 @@ class ApiClient {
     };
 
     try {
-      const response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-      });
+      const response = await fetch(url, { ...fetchOptions, headers });
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -49,118 +48,107 @@ class ApiClient {
       console.error('API request failed:', {
         url,
         endpoint,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
   }
 
   // Auth
-  async login(email: string, password: string) {
-    return this.request('/auth/login', {
+  async login(email: string, password: string): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   }
 
-  async register(username: string, email: string, password: string) {
-    return this.request('/auth/register', {
+  async register(username: string, email: string, password: string): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     });
   }
 
-  async getCurrentUser() {
-    return this.request('/auth/me');
+  async getCurrentUser(): Promise<User> {
+    return this.request<User>('/auth/me');
   }
 
   // Recipes
-  async getRecipes(search?: string) {
-    const params = search ? `?search=${encodeURIComponent(search)}` : '';
-    return this.request(`/recipes${params}`);
+  async getRecipes(search?: string, tags?: string[]): Promise<Recipe[]> {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (tags?.length) params.set('tags', tags.join(','));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.request<Recipe[]>(`/recipes${qs}`);
   }
 
-  async getRecipe(id: number) {
-    return this.request(`/recipes/${id}`);
+  async getRecipe(id: number): Promise<Recipe> {
+    return this.request<Recipe>(`/recipes/${id}`);
   }
 
-  async createRecipe(data: any) {
-    return this.request('/recipes', {
+  async createRecipe(data: CreateRecipeInput): Promise<Recipe> {
+    return this.request<Recipe>('/recipes', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateRecipe(id: number, data: any) {
-    return this.request(`/recipes/${id}`, {
+  async updateRecipe(id: number, data: CreateRecipeInput): Promise<Recipe> {
+    return this.request<Recipe>(`/recipes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async deleteRecipe(id: number) {
-    return this.request(`/recipes/${id}`, {
-      method: 'DELETE',
-    });
+  async deleteRecipe(id: number): Promise<void> {
+    return this.request<void>(`/recipes/${id}`, { method: 'DELETE' });
   }
 
   // Users
-  async getUser(id: number) {
-    return this.request(`/users/${id}`);
+  async getUser(id: number): Promise<User> {
+    return this.request<User>(`/users/${id}`);
   }
 
-  async getUserByUsername(username: string) {
-    return this.request(`/users/username/${username}`);
+  async getUserByUsername(username: string): Promise<User> {
+    return this.request<User>(`/users/username/${username}`);
   }
 
-  async getAllUsers() {
-    return this.request('/users');
+  async getAllUsers(): Promise<User[]> {
+    return this.request<User[]>('/users');
   }
 
-  async deleteUser(userId: number) {
-    return this.request(`/users/${userId}`, {
-      method: 'DELETE',
-    });
+  async deleteUser(userId: number): Promise<void> {
+    return this.request<void>(`/users/${userId}`, { method: 'DELETE' });
   }
 
-  // Ingredients
-  async getIngredients() {
-    return this.request('/ingredients');
+  async getUserRecipes(userId: number): Promise<Recipe[]> {
+    return this.request<Recipe[]>(`/users/${userId}/recipes`);
   }
 
   // Tags
-  async getTags() {
-    return this.request('/tags');
-  }
-
-  async getRecipesByTag(tagId: number) {
-    return this.request(`/tags/${tagId}/recipes`);
-  }
-
-  // Users
-  async getUserRecipes(userId: number) {
-    return this.request(`/users/${userId}/recipes`);
+  async getTags(): Promise<Tag[]> {
+    return this.request<Tag[]>('/tags');
   }
 
   // Favorites
-  async getFavorites() {
-    return this.request('/favorites');
+  async getFavorites(): Promise<Recipe[]> {
+    return this.request<Recipe[]>('/favorites');
   }
 
-  async addFavorite(recipeId: number) {
-    return this.request(`/favorites/${recipeId}`, {
-      method: 'POST',
-    });
+  async getFavoriteIds(): Promise<{ ids: number[] }> {
+    return this.request<{ ids: number[] }>('/favorites/ids');
   }
 
-  async removeFavorite(recipeId: number) {
-    return this.request(`/favorites/${recipeId}`, {
-      method: 'DELETE',
-    });
+  async addFavorite(recipeId: number): Promise<void> {
+    return this.request<void>(`/favorites/${recipeId}`, { method: 'POST' });
   }
 
-  async checkFavorite(recipeId: number) {
-    return this.request(`/favorites/check/${recipeId}`);
+  async removeFavorite(recipeId: number): Promise<void> {
+    return this.request<void>(`/favorites/${recipeId}`, { method: 'DELETE' });
+  }
+
+  async checkFavorite(recipeId: number): Promise<{ is_favorited: boolean }> {
+    return this.request<{ is_favorited: boolean }>(`/favorites/check/${recipeId}`);
   }
 }
 

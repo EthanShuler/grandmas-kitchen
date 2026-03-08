@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 // POST login
 router.post('/login', async (req: Request, res: Response) => {

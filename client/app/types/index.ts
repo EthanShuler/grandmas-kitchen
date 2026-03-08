@@ -1,7 +1,7 @@
 export interface User {
   id: number;
   username: string;
-  email: string;
+  email?: string; // not returned by public endpoints (e.g. GET /users/username/:username)
   avatar_url?: string;
   is_admin: boolean;
   created_at: string;
@@ -31,13 +31,12 @@ export interface Recipe {
 export interface Ingredient {
   id: number;
   name: string;
-  created_at: string;
 }
 
 export interface RecipeIngredient {
   id: number;
-  recipe_id: number;
-  ingredient_id: number;
+  recipe_id?: number;
+  ingredient_id?: number;
   name: string;
   amount?: number;
   unit?: string;
@@ -46,7 +45,7 @@ export interface RecipeIngredient {
 
 export interface Step {
   id: number;
-  recipe_id: number;
+  recipe_id?: number;
   instruction: string;
   order_index: number;
 }
@@ -54,7 +53,7 @@ export interface Step {
 export interface Tag {
   id: number;
   name: string;
-  created_at: string;
+  created_at?: string; // not always included in API responses
 }
 
 export interface AuthResponse {

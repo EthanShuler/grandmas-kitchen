@@ -1,7 +1,7 @@
 import { Stack, Button, Avatar, Text, TextInput, NavLink, Divider, Group, Box, Badge } from '@mantine/core';
 import { Link, useNavigate } from 'react-router';
 import { IconSearch, IconLogout, IconUser, IconHome, IconPlus, IconHeart, IconInfoCircle, IconShield } from '@tabler/icons-react';
-import { useAuth } from '@/components';
+import { useAuth } from '@/lib/auth-context';
 import { useState } from 'react';
 
 interface NavbarProps {

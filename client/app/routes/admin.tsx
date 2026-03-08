@@ -1,11 +1,11 @@
 import { Container, Title, Tabs, Table, Text, Group, Avatar, Badge, Button, ActionIcon } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useNavigate, Link } from 'react-router';
+import { useLoaderData, useNavigate, Link } from 'react-router';
 import { IconUsers, IconTrash } from '@tabler/icons-react';
 import { api } from '@/lib/api';
 import type { User } from '@/types';
-import { useAuth } from '@/components';
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { useState } from 'react';
 
 export function meta() {
   return [
@@ -14,36 +14,27 @@ export function meta() {
   ];
 }
 
+export async function clientLoader(): Promise<{ users: User[] }> {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return { users: [] };
+    const data = await api.getAllUsers() as User[];
+    return { users: Array.isArray(data) ? data : [] };
+  } catch {
+    return { users: [] };
+  }
+}
+
 export default function AdminPanel() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { users: initialUsers } = useLoaderData<typeof clientLoader>();
+  const [users, setUsers] = useState<User[]>(initialUsers);
 
-  useEffect(() => {
-    if (!user?.is_admin) {
-      navigate('/');
-      return;
-    }
-
-    async function fetchUsers() {
-      try {
-        const data = await api.getAllUsers() as User[];
-        setUsers(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        notifications.show({
-          title: 'Error',
-          message: 'Failed to load users',
-          color: 'red',
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUsers();
-  }, [user, navigate]);
+  if (!user?.is_admin) {
+    navigate('/');
+    return null;
+  }
 
   const handleDeleteUser = async (userToDelete: User) => {
     if (!user || userToDelete.id === user.id) {
@@ -64,8 +55,7 @@ export default function AdminPanel() {
           message: 'User deleted successfully.',
           color: 'green',
         });
-      } catch (error) {
-        console.error('Error deleting user:', error);
+      } catch {
         notifications.show({
           title: 'Error',
           message: 'Failed to delete user.',
@@ -74,14 +64,6 @@ export default function AdminPanel() {
       }
     }
   };
-
-  if (loading) {
-    return (
-      <Container size="xl" py="xl">
-        <Text>Loading...</Text>
-      </Container>
-    );
-  }
 
   return (
     <Container size="xl" py="xl">

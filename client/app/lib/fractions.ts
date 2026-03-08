@@ -105,22 +105,3 @@ export function fractionToDecimal(input: string): number | undefined {
   return undefined;
 }
 
-/**
- * Common fraction presets for a dropdown/quick select
- */
-export const COMMON_FRACTIONS = [
-  { label: '1/4', value: 0.25 },
-  { label: '1/3', value: 0.333333 },
-  { label: '1/2', value: 0.5 },
-  { label: '2/3', value: 0.666667 },
-  { label: '3/4', value: 0.75 },
-  { label: '1', value: 1 },
-  { label: '1 1/4', value: 1.25 },
-  { label: '1 1/3', value: 1.333333 },
-  { label: '1 1/2', value: 1.5 },
-  { label: '1 2/3', value: 1.666667 },
-  { label: '1 3/4', value: 1.75 },
-  { label: '2', value: 2 },
-  { label: '2 1/2', value: 2.5 },
-  { label: '3', value: 3 },
-];

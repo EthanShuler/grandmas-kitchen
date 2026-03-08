@@ -1,15 +1,21 @@
 import { Container, Title, Text, Paper, Badge, Group, Stack, List, Divider, Button, Image, Grid } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { Link, useLoaderData, useNavigate } from 'react-router';
+import DOMPurify from 'dompurify';
 import type { Route } from './+types/recipe.$id';
 import { api } from '@/lib/api';
 import { decimalToFraction } from '@/lib/fractions';
 import type { Recipe } from '@/types';
-import { useAuth, FavoriteButton } from '@/components';
+import { useAuth } from '@/lib/auth-context';
+import { FavoriteButton } from '@/components';
 
 export async function loader({ params }: Route.LoaderArgs): Promise<{ recipe: Recipe | null }> {
-  const recipe = await api.getRecipe(Number(params.id)) as Recipe | null;
-  return { recipe };
+  try {
+    const recipe = await api.getRecipe(Number(params.id));
+    return { recipe };
+  } catch {
+    return { recipe: null };
+  }
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -18,6 +24,11 @@ export function meta({ data }: Route.MetaArgs) {
     { title: `${recipe?.title || 'Recipe'} - Grandma's Kitchen` },
     { name: "description", content: recipe?.description || 'View recipe details' },
   ];
+}
+
+function sanitize(html: string): string {
+  if (typeof window === 'undefined') return html; // SSR: skip sanitization
+  return DOMPurify.sanitize(html);
 }
 
 export default function RecipeDetail() {
@@ -58,7 +69,7 @@ export default function RecipeDetail() {
           <Group>
             <Button
               component={Link}
-              to={`/recipe/${recipe.id}/edit`}
+              to={`/recipes/${recipe.id}/edit`}
               variant="outline"
             >
               Edit Recipe
@@ -75,10 +86,7 @@ export default function RecipeDetail() {
                       message: 'Recipe deleted successfully.',
                       color: 'green',
                     });
-                    // Delay navigation slightly to allow notification to show
-                    setTimeout(() => {
-                      navigate('/');
-                    }, 500);
+                    setTimeout(() => navigate('/'), 500);
                   } catch (error) {
                     console.error('Error deleting recipe:', error);
                     notifications.show({
@@ -107,19 +115,13 @@ export default function RecipeDetail() {
 
       <Group gap="xs" mb="xl">
         {recipe.prep_time && (
-          <Badge size="lg" variant="light">
-            Prep: {recipe.prep_time} min
-          </Badge>
+          <Badge size="lg" variant="light">Prep: {recipe.prep_time} min</Badge>
         )}
         {recipe.cook_time && (
-          <Badge size="lg" variant="light">
-            Cook: {recipe.cook_time} min
-          </Badge>
+          <Badge size="lg" variant="light">Cook: {recipe.cook_time} min</Badge>
         )}
         {recipe.servings && (
-          <Badge size="lg" variant="light">
-            Serves {recipe.servings}
-          </Badge>
+          <Badge size="lg" variant="light">Serves {recipe.servings}</Badge>
         )}
       </Group>
 
@@ -160,8 +162,8 @@ export default function RecipeDetail() {
             {recipe.notes && (
               <Paper shadow="xs" p="md" withBorder bg="orange.0">
                 <Title order={3} size="h4" mb="sm">Notes</Title>
-                <div 
-                  dangerouslySetInnerHTML={{ __html: recipe.notes }}
+                <div
+                  dangerouslySetInnerHTML={{ __html: sanitize(recipe.notes) }}
                   style={{ lineHeight: '1.6' }}
                   className="tiptap-content"
                 />
@@ -171,8 +173,8 @@ export default function RecipeDetail() {
             {recipe.instructions && (
               <Paper shadow="xs" p="md" withBorder>
                 <Title order={3} size="h4" mb="sm">Instructions</Title>
-                <div 
-                  dangerouslySetInnerHTML={{ __html: recipe.instructions }}
+                <div
+                  dangerouslySetInnerHTML={{ __html: sanitize(recipe.instructions) }}
                   style={{ lineHeight: '1.6' }}
                   className="tiptap-content"
                 />
@@ -182,11 +184,9 @@ export default function RecipeDetail() {
             {recipe.markdown_content && (
               <Paper shadow="xs" p="md" withBorder>
                 <Title order={3} size="h4" mb="sm">Recipe Story</Title>
-                <div 
-                  dangerouslySetInnerHTML={{ __html: recipe.markdown_content }}
-                  style={{ 
-                    lineHeight: '1.6',
-                  }}
+                <div
+                  dangerouslySetInnerHTML={{ __html: sanitize(recipe.markdown_content) }}
+                  style={{ lineHeight: '1.6' }}
                   className="tiptap-content"
                 />
               </Paper>
@@ -206,7 +206,6 @@ export default function RecipeDetail() {
                 ))}
               </List>
             </Paper>
-
           </Stack>
         </Grid.Col>
       </Grid>
@@ -215,12 +214,13 @@ export default function RecipeDetail() {
         <>
           <Divider my="xl" />
           <Text size="sm" c="dimmed">
-            Recipe by <Text 
-              component={Link} 
+            Recipe by{' '}
+            <Text
+              component={Link}
               to={`/profiles/${recipe.author}`}
               span
               c="blue"
-              style={{ cursor: 'pointer', textDecoration: 'none' }}
+              style={{ textDecoration: 'none' }}
             >
               {recipe.author}
             </Text>

@@ -2,18 +2,25 @@ import { Container, Title, Text, Card, SimpleGrid, Avatar, Group, Stack, Button 
 import { notifications } from '@mantine/notifications';
 import { useLoaderData, useNavigate } from 'react-router';
 import type { Route } from './+types/profiles.$username';
-import { RecipeCard, useAuth } from '@/components';
+import { RecipeCard } from '@/components';
+import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
 import type { Recipe, User } from '@/types';
 
 export async function loader({ params }: Route.LoaderArgs) {
+  let user: User | null = null;
+  let userRecipes: Recipe[] = [];
   try {
-    const user = await api.getUserByUsername(params.username) as User;
-    const userRecipes = await api.getUserRecipes(user.id) as Recipe[];
-    return { user, userRecipes };
-  } catch (error) {
+    user = await api.getUserByUsername(params.username) as User;
+  } catch {
     return { user: null, userRecipes: [] };
   }
+  try {
+    userRecipes = await api.getUserRecipes(user.id) as Recipe[];
+  } catch {
+    // user was found but recipes failed — still show the profile
+  }
+  return { user, userRecipes };
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -78,7 +85,6 @@ export default function UserProfile() {
             </Avatar>
             <Stack gap="xs">
               <Title order={2}>{user.username}</Title>
-              <Text c="dimmed">{user.email}</Text>
               <Text size="sm" c="dimmed">
                 Joined {new Date(user.created_at).toLocaleDateString()}
               </Text>
