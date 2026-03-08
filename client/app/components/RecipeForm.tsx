@@ -1,8 +1,9 @@
 import { TextInput, Textarea, NumberInput, Button, Paper, Stack, Group, ActionIcon, Text, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
-import { RichTextEditor, Link as TipTapLink } from '@mantine/tiptap';
+import { RichTextEditor } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
+import { StandardEditorToolbar } from './StandardEditorToolbar';
 import StarterKit from '@tiptap/starter-kit';
 import { Link as LinkExtension } from '@tiptap/extension-link';
 import { useEffect } from 'react';
@@ -256,33 +257,7 @@ export function RecipeForm({
           <Text fw={500} size="sm" mb="xs">Notes</Text>
           <Text size="xs" c="dimmed" mb="sm">Add tips, variations, or important cooking notes</Text>
           <RichTextEditor editor={notesEditor}>
-            <RichTextEditor.Toolbar sticky stickyOffset={60}>
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Bold />
-                <RichTextEditor.Italic />
-                <RichTextEditor.Strikethrough />
-                <RichTextEditor.ClearFormatting />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.H1 />
-                <RichTextEditor.H2 />
-                <RichTextEditor.H3 />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Blockquote />
-                <RichTextEditor.Hr />
-                <RichTextEditor.BulletList />
-                <RichTextEditor.OrderedList />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Link />
-                <RichTextEditor.Unlink />
-              </RichTextEditor.ControlsGroup>
-            </RichTextEditor.Toolbar>
-
+            <StandardEditorToolbar />
             <RichTextEditor.Content />
           </RichTextEditor>
         </Paper>
@@ -301,33 +276,7 @@ export function RecipeForm({
           <Text fw={500} size="sm" mb="xs">Instructions</Text>
           <Text size="xs" c="dimmed" mb="sm">Detailed cooking instructions with formatting</Text>
           <RichTextEditor editor={instructionsEditor}>
-            <RichTextEditor.Toolbar sticky stickyOffset={60}>
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Bold />
-                <RichTextEditor.Italic />
-                <RichTextEditor.Strikethrough />
-                <RichTextEditor.ClearFormatting />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.H1 />
-                <RichTextEditor.H2 />
-                <RichTextEditor.H3 />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Blockquote />
-                <RichTextEditor.Hr />
-                <RichTextEditor.BulletList />
-                <RichTextEditor.OrderedList />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Link />
-                <RichTextEditor.Unlink />
-              </RichTextEditor.ControlsGroup>
-            </RichTextEditor.Toolbar>
-
+            <StandardEditorToolbar />
             <RichTextEditor.Content />
           </RichTextEditor>
         </Paper>
@@ -337,33 +286,7 @@ export function RecipeForm({
           <Text fw={500} size="sm" mb="xs">Recipe Story (Optional)</Text>
           <Text size="xs" c="dimmed" mb="sm">Share the history, memories, or special stories about this recipe</Text>
           <RichTextEditor editor={storyEditor}>
-            <RichTextEditor.Toolbar sticky stickyOffset={60}>
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Bold />
-                <RichTextEditor.Italic />
-                <RichTextEditor.Strikethrough />
-                <RichTextEditor.ClearFormatting />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.H1 />
-                <RichTextEditor.H2 />
-                <RichTextEditor.H3 />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Blockquote />
-                <RichTextEditor.Hr />
-                <RichTextEditor.BulletList />
-                <RichTextEditor.OrderedList />
-              </RichTextEditor.ControlsGroup>
-
-              <RichTextEditor.ControlsGroup>
-                <RichTextEditor.Link />
-                <RichTextEditor.Unlink />
-              </RichTextEditor.ControlsGroup>
-            </RichTextEditor.Toolbar>
-
+            <StandardEditorToolbar />
             <RichTextEditor.Content />
           </RichTextEditor>
         </Paper>

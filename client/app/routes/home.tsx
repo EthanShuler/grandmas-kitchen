@@ -3,44 +3,59 @@ import { Link, useLoaderData, useSearchParams } from 'react-router';
 import type { Route } from './+types/home';
 import { api } from '@/lib/api';
 import type { Recipe, Tag } from '@/types';
-import { RecipeCard, useAuth } from '@/components';
+import { useAuth } from '@/lib/auth-context';
+import { RecipeCard } from '@/components';
 
 interface LoaderData {
   recipes: Recipe[];
   allTags: Tag[];
   search: string | null;
   selectedTags: string[];
+  favoriteIds: number[];
 }
 
-export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData> {
+export async function loader({ request }: Route.LoaderArgs): Promise<Omit<LoaderData, 'favoriteIds'>> {
   const url = new URL(request.url);
   const search = url.searchParams.get('search');
   const tagParam = url.searchParams.get('tags');
   const selectedTags = tagParam ? tagParam.split(',') : [];
-  
+
   try {
     const [recipes, allTags] = await Promise.all([
-      api.getRecipes(search || undefined),
-      api.getTags()
+      api.getRecipes(search || undefined, selectedTags.length ? selectedTags : undefined),
+      api.getTags(),
     ]);
-    
-    return { 
-      recipes: Array.isArray(recipes) ? recipes : [], 
+
+    return {
+      recipes: Array.isArray(recipes) ? recipes : [],
       allTags: Array.isArray(allTags) ? allTags : [],
       search,
-      selectedTags
+      selectedTags,
     };
   } catch (error) {
     console.error('Error loading home page data:', error);
-    // Return empty data if API fails
-    return {
-      recipes: [],
-      allTags: [],
-      search,
-      selectedTags
-    };
+    return { recipes: [], allTags: [], search, selectedTags };
   }
 }
+
+// Runs on the client after the server loader to fetch the user's favorite IDs
+export async function clientLoader({ serverLoader }: Route.ClientLoaderArgs): Promise<LoaderData> {
+  const [serverData, favoriteIds] = await Promise.all([
+    serverLoader(),
+    (async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) return [];
+      try {
+        const result = await api.getFavoriteIds();
+        return result.ids;
+      } catch {
+        return [];
+      }
+    })(),
+  ]);
+  return { ...serverData, favoriteIds };
+}
+clientLoader.hydrate = true;
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -50,12 +65,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { recipes, allTags, search, selectedTags } = useLoaderData<typeof loader>();
+  const { recipes, allTags, search, selectedTags, favoriteIds = [] } = useLoaderData<typeof clientLoader>();
   const { isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const clearSearch = () => {
-    setSearchParams({});
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('search');
+    setSearchParams(newParams);
   };
 
   const handleTagChange = (tags: string[]) => {
@@ -67,13 +84,6 @@ export default function Home() {
     }
     setSearchParams(newParams);
   };
-
-  // Filter recipes by selected tags
-  const filteredRecipes = selectedTags.length > 0
-    ? recipes.filter(recipe => 
-        recipe.tags && recipe.tags.some(tag => selectedTags.includes(tag.name))
-      )
-    : recipes;
 
   return (
     <Container size="xl" py="md">
@@ -92,14 +102,14 @@ export default function Home() {
       {search && (
         <Group mb="lg">
           <Text size="sm">Searching for:</Text>
-          <Badge 
-            size="lg" 
-            variant="light" 
+          <Badge
+            size="lg"
+            variant="light"
             rightSection={<CloseButton size="xs" onClick={clearSearch} />}
           >
             {search}
           </Badge>
-          <Text size="sm" c="dimmed">({filteredRecipes.length} result{filteredRecipes.length !== 1 ? 's' : ''})</Text>
+          <Text size="sm" c="dimmed">({recipes.length} result{recipes.length !== 1 ? 's' : ''})</Text>
         </Group>
       )}
 
@@ -115,24 +125,24 @@ export default function Home() {
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
-        {filteredRecipes.map((recipe) => (
-          <RecipeCard 
-            key={recipe.id} 
-            recipe={recipe} 
-            linkTo={`/recipes/${recipe.id}`} 
+        {recipes.map((recipe) => (
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            linkTo={`/recipes/${recipe.id}`}
+            isFavorited={favoriteIds.includes(recipe.id)}
           />
         ))}
       </SimpleGrid>
 
-      {filteredRecipes.length === 0 && (
+      {recipes.length === 0 && (
         <Card shadow="sm" padding="xl" radius="md" withBorder>
           <Text ta="center" c="dimmed">
             {selectedTags.length > 0
-              ? `No recipes found with the selected tags.`
-              : search 
+              ? 'No recipes found with the selected tags.'
+              : search
               ? `No recipes found matching "${search}". Try a different search term.`
-              : 'No recipes yet. Be the first to add one!'
-            }
+              : 'No recipes yet. Be the first to add one!'}
           </Text>
         </Card>
       )}

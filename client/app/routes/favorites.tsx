@@ -3,20 +3,18 @@ import { useLoaderData } from 'react-router';
 import type { Route } from './+types/favorites';
 import { api } from '@/lib/api';
 import type { Recipe } from '@/types';
-import { RecipeCard, useAuth } from '@/components';
+import { RecipeCard } from '@/components';
+import { useAuth } from '@/lib/auth-context';
 
 export async function clientLoader(): Promise<{ recipes: Recipe[] }> {
   try {
     const token = localStorage.getItem('token');
-    console.log('Token exists:', !!token);
     if (!token) {
       return { recipes: [] };
     }
     const recipes = await api.getFavorites();
-    console.log('Favorites loaded:', recipes);
     return { recipes: Array.isArray(recipes) ? recipes : [] };
-  } catch (error) {
-    console.error('Error loading favorites:', error);
+  } catch {
     return { recipes: [] };
   }
 }
@@ -31,8 +29,6 @@ export function meta({}: Route.MetaArgs) {
 export default function Favorites() {
   const { recipes } = useLoaderData<typeof clientLoader>();
   const { isAuthenticated, isLoading } = useAuth();
-
-  console.log('Favorites component - recipes:', recipes, 'isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   if (isLoading) {
     return (

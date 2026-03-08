@@ -1,25 +1,29 @@
 import { Container, Title, Text, Card, SimpleGrid, Avatar, Group, Stack } from '@mantine/core';
 import { useLoaderData } from 'react-router';
 import type { Route } from './+types/profile';
-import { useAuth, RecipeCard } from '@/components';
+import { RecipeCard } from '@/components';
+import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
 import type { Recipe } from '@/types';
+
+function getUserIdFromToken(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return typeof payload.userId === 'number' ? payload.userId : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function clientLoader(): Promise<{ recipes: Recipe[] }> {
   try {
     const token = localStorage.getItem('token');
-    if (!token) {
-      return { recipes: [] };
-    }
-    // Get current user from auth context, but we need to fetch from API
-    const currentUser = await api.getCurrentUser() as any;
-    if (!currentUser || !currentUser.id) {
-      return { recipes: [] };
-    }
-    const recipes = await api.getUserRecipes(currentUser.id);
+    if (!token) return { recipes: [] };
+    const userId = getUserIdFromToken(token);
+    if (!userId) return { recipes: [] };
+    const recipes = await api.getUserRecipes(userId);
     return { recipes: Array.isArray(recipes) ? recipes : [] };
-  } catch (error) {
-    console.error('Error loading user recipes:', error);
+  } catch {
     return { recipes: [] };
   }
 }
@@ -59,9 +63,9 @@ export default function UserProfile() {
     <Container size="xl" py="md">
       <Card shadow="sm" padding="xl" radius="md" withBorder mb="xl">
         <Group>
-          <Avatar 
-            src={user.avatar_url} 
-            size="xl" 
+          <Avatar
+            src={user.avatar_url}
+            size="xl"
             radius="xl"
             color="blue"
           >
@@ -69,7 +73,7 @@ export default function UserProfile() {
           </Avatar>
           <Stack gap="xs">
             <Title order={2}>{user.username}</Title>
-            <Text c="dimmed">{user.email}</Text>
+            {user.email && <Text c="dimmed">{user.email}</Text>}
             <Text size="sm" c="dimmed">
               Joined {new Date(user.created_at).toLocaleDateString()}
             </Text>
@@ -81,10 +85,10 @@ export default function UserProfile() {
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
         {recipes.map((recipe) => (
-          <RecipeCard 
-            key={recipe.id} 
-            recipe={recipe} 
-            linkTo={`/recipes/${recipe.id}`} 
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            linkTo={`/recipes/${recipe.id}`}
           />
         ))}
       </SimpleGrid>

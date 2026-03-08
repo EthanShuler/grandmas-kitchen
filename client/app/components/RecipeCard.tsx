@@ -6,9 +6,10 @@ import { FavoriteButton } from './FavoriteButton';
 interface RecipeCardProps {
   recipe: Recipe;
   linkTo?: string;
+  isFavorited?: boolean;
 }
 
-export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
+export function RecipeCard({ recipe, linkTo, isFavorited }: RecipeCardProps) {
   const navigate = useNavigate();
 
   const cardContent = (
@@ -26,7 +27,7 @@ export function RecipeCard({ recipe, linkTo }: RecipeCardProps) {
       
       <Group justify="space-between" mb="xs" mt="md">
         <Text fw={500} size="lg" lineClamp={1} style={{ flex: 1 }}>{recipe.title}</Text>
-        <FavoriteButton recipeId={recipe.id} size="sm" />
+        <FavoriteButton recipeId={recipe.id} size="sm" initialFavorited={isFavorited} />
       </Group>
 
       {recipe.description && (

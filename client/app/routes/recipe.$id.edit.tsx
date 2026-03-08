@@ -1,14 +1,20 @@
 import { Container, Title, Text, Button } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { Link, useLoaderData, useNavigate } from 'react-router';
 import { useState } from 'react';
 import type { Route } from './+types/recipe.$id.edit';
 import { api } from '@/lib/api';
 import type { Recipe, CreateRecipeInput } from '@/types';
-import { RecipeForm, recipeToFormValues, useAuth } from '@/components';
+import { useAuth } from '@/lib/auth-context';
+import { RecipeForm, recipeToFormValues } from '@/components';
 
 export async function loader({ params }: Route.LoaderArgs): Promise<{ recipe: Recipe | null }> {
-  const recipe = await api.getRecipe(Number(params.id)) as Recipe | null;
-  return { recipe };
+  try {
+    const recipe = await api.getRecipe(Number(params.id));
+    return { recipe };
+  } catch {
+    return { recipe: null };
+  }
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -44,7 +50,8 @@ export default function RecipeEdit() {
     );
   }
 
-  if (!isAuthenticated || (user && user.username !== recipe.author)) {
+  // Block non-owners; admins are allowed (mirrors the server-side check)
+  if (!isAuthenticated || (user && user.username !== recipe.author && !user.is_admin)) {
     return (
       <Container size="md" py="xl">
         <Title order={1}>You cannot edit this recipe</Title>
@@ -63,7 +70,11 @@ export default function RecipeEdit() {
       navigate(`/recipes/${recipe.id}`);
     } catch (error) {
       console.error('Error updating recipe:', error);
-      alert('Failed to update recipe.');
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update recipe.',
+        color: 'red',
+      });
     } finally {
       setIsLoading(false);
     }

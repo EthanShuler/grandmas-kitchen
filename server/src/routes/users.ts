@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../db';
+import { attachTagsToRecipes } from '../db/helpers';
 import { authenticate, adminOnly } from '../middleware/auth';
-import bcrypt from 'bcrypt';
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.get('/', adminOnly, async (req: Request, res: Response) => {
   }
 });
 
-// GET user by ID
+// GET user by ID (authenticated)
 router.get('/:id', authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -26,12 +26,10 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
       'SELECT id, username, email, avatar_url, is_admin, created_at FROM users WHERE id = $1',
       [id]
     );
-    
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -39,20 +37,18 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
   }
 });
 
-// GET user by username
+// GET user by username (public — email excluded)
 router.get('/username/:username', async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
     const result = await query(
-      'SELECT id, username, email, avatar_url, is_admin, created_at FROM users WHERE username = $1',
+      'SELECT id, username, avatar_url, is_admin, created_at FROM users WHERE username = $1',
       [username]
     );
-    
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching user by username:', error);
@@ -60,11 +56,10 @@ router.get('/username/:username', async (req: Request, res: Response) => {
   }
 });
 
-// GET user's recipes
+// GET user's recipes (public)
 router.get('/:id/recipes', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
     const result = await query(
       `SELECT DISTINCT r.*, u.username as author
        FROM recipes r
@@ -73,31 +68,7 @@ router.get('/:id/recipes', async (req: Request, res: Response) => {
        ORDER BY r.created_at DESC`,
       [id]
     );
-    
-    // Fetch tags for all recipes
-    const recipeIds = result.rows.map((r: any) => r.id);
-    if (recipeIds.length > 0) {
-      const tagsResult = await query(
-        `SELECT rt.recipe_id, t.id, t.name
-         FROM recipe_tags rt
-         JOIN tags t ON rt.tag_id = t.id
-         WHERE rt.recipe_id = ANY($1)`,
-        [recipeIds]
-      );
-      
-      const tagsByRecipe: Record<number, any[]> = {};
-      for (const tag of tagsResult.rows) {
-        if (!tagsByRecipe[tag.recipe_id]) {
-          tagsByRecipe[tag.recipe_id] = [];
-        }
-        tagsByRecipe[tag.recipe_id].push({ id: tag.id, name: tag.name });
-      }
-      
-      for (const recipe of result.rows) {
-        recipe.tags = tagsByRecipe[recipe.id] || [];
-      }
-    }
-    
+    await attachTagsToRecipes(result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching user recipes:', error);
@@ -105,51 +76,19 @@ router.get('/:id/recipes', async (req: Request, res: Response) => {
   }
 });
 
-// POST create new user (registration)
-router.post('/', async (req: Request, res: Response) => {
-  try {
-    const { username, email, password, avatar_url } = req.body;
-    
-    if (!username || !email || !password) {
-      res.status(400).json({ error: 'Username, email, and password are required' });
-      return;
-    }
-    
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(password, saltRounds);
-    
-    const result = await query(
-      `INSERT INTO users (username, email, password_hash, avatar_url)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, username, email, avatar_url, is_admin, created_at`,
-      [username, email, password_hash, avatar_url || null]
-    );
-    
-    res.status(201).json(result.rows[0]);
-  } catch (error: any) {
-    console.error('Error creating user:', error);
-    if (error.code === '23505') {
-      res.status(409).json({ error: 'Username or email already exists' });
-      return;
-    }
-    res.status(500).json({ error: 'Failed to create user' });
-  }
-});
-
-// PUT update user
+// PUT update user (self or admin)
 router.put('/:id', authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { username, email, avatar_url } = req.body;
-    
-    // Users can only update their own profile unless admin
-    if (req.user?.userId !== parseInt(id) && !req.user?.isAdmin) {
+
+    if (req.user!.userId !== parseInt(id) && !req.user!.isAdmin) {
       res.status(403).json({ error: 'Not authorized to update this user' });
       return;
     }
-    
+
     const result = await query(
-      `UPDATE users 
+      `UPDATE users
        SET username = COALESCE($1, username),
            email = COALESCE($2, email),
            avatar_url = COALESCE($3, avatar_url)
@@ -157,12 +96,12 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
        RETURNING id, username, email, avatar_url, is_admin, created_at`,
       [username, email, avatar_url, id]
     );
-    
+
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    
+
     res.json(result.rows[0]);
   } catch (error: any) {
     console.error('Error updating user:', error);
@@ -178,17 +117,11 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
 router.delete('/:id', adminOnly, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
-    const result = await query(
-      'DELETE FROM users WHERE id = $1 RETURNING id',
-      [id]
-    );
-    
+    const result = await query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);

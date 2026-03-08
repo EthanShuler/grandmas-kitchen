@@ -12,9 +12,9 @@ import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
 import '@mantine/notifications/styles.css';
 
-import { 
-  MantineProvider, 
-  createTheme, 
+import {
+  MantineProvider,
+  createTheme,
   AppShell,
   Burger,
   Title,
@@ -23,8 +23,6 @@ import {
 import { Notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
-import { api } from '@/lib/api';
-import type { User } from '@/types';
 import { Navbar, LoginModal, RegisterModal } from '@/components';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import "./app.css";
@@ -67,6 +65,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  return (
+    <MantineProvider theme={theme} forceColorScheme="light">
+      <Notifications />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </MantineProvider>
+  );
+}
+
+// AppContent lives inside AuthProvider so it can use useAuth() for login/register
+function AppContent() {
+  const { user, logout, login, register } = useAuth();
+  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(false);
   const [loginOpened, { open: openLogin, close: closeLogin }] = useDisclosure(false);
   const [registerOpened, { open: openRegister, close: closeRegister }] = useDisclosure(false);
   const [loading, setLoading] = useState(false);
@@ -76,17 +88,10 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.login(values.email, values.password) as { token: string; user: User };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', response.token);
-      }
+      await login(values.email, values.password);
       closeLogin();
-      // Reload the page to trigger auth context to load the user
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to login');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to login');
     } finally {
       setLoading(false);
     }
@@ -96,17 +101,10 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.register(values.username, values.email, values.password) as { token: string; user: User };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', response.token);
-      }
+      await register(values.username, values.email, values.password);
       closeRegister();
-      // Reload the page to trigger auth context to load the user
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to register');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to register');
     } finally {
       setLoading(false);
     }
@@ -125,71 +123,50 @@ export default function App() {
   };
 
   return (
-    <MantineProvider theme={theme} forceColorScheme="light">
-      <Notifications />
-      <AuthProvider>
-        <AppContent
-          onLoginClick={openLogin}
-          onRegisterClick={openRegister}
-        />
-        
-        <LoginModal
-          opened={loginOpened}
-          onClose={closeLogin}
-          onLogin={handleLogin}
-          onSwitchToRegister={handleSwitchToRegister}
-          loading={loading}
-          error={error}
-        />
+    <>
+      <AppShell
+        header={{ height: 60 }}
+        padding="md"
+        navbar={{ width: 280, breakpoint: 'sm', collapsed: { mobile: !navbarOpened, desktop: false } }}
+      >
+        <AppShell.Header>
+          <Group h="100%" px="md">
+            <Burger opened={navbarOpened} onClick={toggleNavbar} hiddenFrom="sm" size="sm" />
+            <Title size="h4">Grandma's Kitchen</Title>
+          </Group>
+        </AppShell.Header>
+        <AppShell.Navbar p="md">
+          <Navbar
+            onLoginClick={openLogin}
+            onRegisterClick={openRegister}
+            onLogout={logout}
+            onClose={toggleNavbar}
+          />
+        </AppShell.Navbar>
 
-        <RegisterModal
-          opened={registerOpened}
-          onClose={closeRegister}
-          onRegister={handleRegister}
-          onSwitchToLogin={handleSwitchToLogin}
-          loading={loading}
-          error={error}
-        />
-      </AuthProvider>
-    </MantineProvider>
-  );
-}
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell>
 
-function AppContent({ 
-  onLoginClick, 
-  onRegisterClick 
-}: { 
-  onLoginClick: () => void; 
-  onRegisterClick: () => void;
-}) {
-  const { user, logout } = useAuth();
-  const [navbarOpened, { toggle: toggleNavbar }] = useDisclosure(false);
+      <LoginModal
+        opened={loginOpened}
+        onClose={closeLogin}
+        onLogin={handleLogin}
+        onSwitchToRegister={handleSwitchToRegister}
+        loading={loading}
+        error={error}
+      />
 
-  return (
-    <AppShell
-      header={{ height: 60 }}
-      padding="md"
-      navbar={{ width: 280, breakpoint: 'sm', collapsed: { mobile: !navbarOpened, desktop: false } }}
-    >
-      <AppShell.Header>
-        <Group h="100%" px="md">
-          <Burger opened={navbarOpened} onClick={toggleNavbar} hiddenFrom="sm" size="sm" />
-          <Title size="h4">Grandma's Kitchen</Title>
-        </Group>
-      </AppShell.Header>
-      <AppShell.Navbar p="md">
-        <Navbar
-          onLoginClick={onLoginClick}
-          onRegisterClick={onRegisterClick}
-          onLogout={logout}
-          onClose={toggleNavbar}
-        />
-      </AppShell.Navbar>
-
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+      <RegisterModal
+        opened={registerOpened}
+        onClose={closeRegister}
+        onRegister={handleRegister}
+        onSwitchToLogin={handleSwitchToLogin}
+        loading={loading}
+        error={error}
+      />
+    </>
   );
 }
 
